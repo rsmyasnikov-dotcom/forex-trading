@@ -1,258 +1,268 @@
-<!doctype html>
-<html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#07111f" />
-    <title>FX Scanner Pro URL</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <div class="app-shell">
-      <header class="sticky-topbar">
-        <div class="brand-row">
-          <div class="brand-block">
-            <div class="brand-title-row">
-              <span class="live-dot"></span>
-              <div>
-                <p class="brand-title">FX SCANNER PRO URL</p>
-                <p class="brand-subtitle">OB · FVG · Structure · Alerts · Multi-scan</p>
-              </div>
-            </div>
-            <p class="brand-copy">
-              URL-friendly static scanner: работает без Node.js, хранит историю/алерты локально
-              и может запускаться в demo-режиме или через ваш AI proxy endpoint.
-            </p>
-          </div>
-          <div class="clock-panel panel-soft">
-            <div class="clock-time" id="clockTime">--:--:--</div>
-            <div class="clock-session"><span id="sessionDot" class="session-dot"></span><span id="sessionName">—</span></div>
-            <div class="clock-note">Europe/Moscow</div>
-          </div>
-        </div>
-        <nav class="tabs" id="tabs"></nav>
-      </header>
-
-      <main class="page-stack">
-        <section id="view-scan" class="view active">
-          <div class="grid two-col">
-            <section class="panel card-stack">
-              <div class="section-head">
-                <div>
-                  <p class="eyebrow">Scan setup</p>
-                  <h2>Пара, режим и источник сигнала</h2>
-                </div>
-                <button id="loadDemo" class="ghost-button">Демо-данные</button>
-              </div>
-
-              <div class="chip-row" id="pairChips"></div>
-
-              <div class="mode-grid" id="modeSwitch"></div>
-
-              <div class="field-grid compact">
-                <label>
-                  AI endpoint
-                  <input id="apiEndpoint" type="text" placeholder="https://your-proxy.example.com/v1/messages" />
-                </label>
-                <label>
-                  Model
-                  <input id="apiModel" type="text" placeholder="claude-sonnet-4-20250514" />
-                </label>
-                <label>
-                  API key
-                  <input id="apiKey" type="password" placeholder="Хранится только в браузере" />
-                </label>
-                <label>
-                  Режим ответа
-                  <select id="responseMode">
-                    <option value="demo">Demo / offline</option>
-                    <option value="proxy">Через proxy endpoint</option>
-                  </select>
-                </label>
-              </div>
-
-              <div class="callout info">
-                <strong>Как это работает по URL:</strong>
-                статический интерфейс можно бесплатно выложить на Netlify / GitHub Pages.
-                Для реального AI-запроса лучше подключать <strong>свой proxy endpoint</strong>, а не светить ключ в публичном браузере.
-              </div>
-
-              <details class="details-panel">
-                <summary>Показать prompt / интеграцию</summary>
-                <div class="details-grid">
-                  <label>
-                    Deep prompt
-                    <textarea id="deepPromptPreview" readonly></textarea>
-                  </label>
-                  <label>
-                    Quick prompt
-                    <textarea id="quickPromptPreview" readonly></textarea>
-                  </label>
-                </div>
-                <div class="button-row">
-                  <button id="copyDeepPrompt" class="ghost-button">Копировать deep</button>
-                  <button id="copyQuickPrompt" class="ghost-button">Копировать quick</button>
-                </div>
-              </details>
-            </section>
-
-            <section class="panel card-stack">
-              <div class="section-head">
-                <div>
-                  <p class="eyebrow">Action</p>
-                  <h2>Управление сканированием</h2>
-                </div>
-              </div>
-
-              <div class="status-hero" id="scanStatusHero">
-                <div>
-                  <div class="status-line">
-                    <span class="status-pill neutral" id="mainStatusPill">READY</span>
-                    <span class="muted-text" id="scanMeta">Выберите режим и запустите сканирование</span>
-                  </div>
-                  <h3 id="scanHeadline">Статический URL-ready интерфейс</h3>
-                  <p id="scanDescription" class="muted-text">
-                    В demo-режиме приложение показывает улучшенный UX и логику рендеринга.
-                    В proxy-режиме оно готово принять ответ AI в JSON и отрисовать его без сборки и без Node.js.
-                  </p>
-                </div>
-                <div class="hero-metrics">
-                  <article>
-                    <span>Пара</span>
-                    <strong id="metricPair">EUR/USD</strong>
-                  </article>
-                  <article>
-                    <span>Режим</span>
-                    <strong id="metricMode">DEEP</strong>
-                  </article>
-                  <article>
-                    <span>Источник</span>
-                    <strong id="metricSource">DEMO</strong>
-                  </article>
-                </div>
-              </div>
-
-              <div id="loadingBlock" class="loading-block hidden">
-                <div class="loading-text" id="loadingText">Ищу реальную цену...</div>
-                <div class="skeleton-grid">
-                  <div class="skeleton tall"></div>
-                  <div class="skeleton"></div>
-                  <div class="skeleton"></div>
-                  <div class="skeleton short"></div>
-                </div>
-              </div>
-
-              <div class="button-row sticky-actions">
-                <button id="runScan" class="primary-button big-button">🔬 Глубокий скан</button>
-                <button id="runMultiScan" class="secondary-button big-button">⚡ Все пары</button>
-              </div>
-
-              <div id="errorBox" class="callout danger hidden"></div>
-            </section>
-          </div>
-
-          <div class="grid results-layout">
-            <section class="panel card-stack">
-              <div class="section-head">
-                <div>
-                  <p class="eyebrow">Analysis</p>
-                  <h2>Результат по выбранной паре</h2>
-                </div>
-                <button id="copyJson" class="ghost-button">Копировать JSON</button>
-              </div>
-              <div id="analysisContent" class="analysis-content empty-state">
-                <div class="empty-icon">◈</div>
-                <h3>Нет результата</h3>
-                <p>Нажмите «Глубокий скан» или загрузите demo-данные.</p>
-              </div>
-            </section>
-
-            <aside class="side-column">
-              <section class="panel card-stack">
-                <div class="section-head">
-                  <div>
-                    <p class="eyebrow">Export</p>
-                    <h2>JSON и текст</h2>
-                  </div>
-                </div>
-                <pre id="jsonOutput" class="json-output">{}</pre>
-                <textarea id="textSummary" class="prompt-output" readonly></textarea>
-              </section>
-
-              <section class="panel card-stack">
-                <div class="section-head">
-                  <div>
-                    <p class="eyebrow">System notes</p>
-                    <h2>Что улучшено</h2>
-                  </div>
-                </div>
-                <ul class="feature-list">
-                  <li>Интерфейс разбит на вкладки: Scan / Multi / Alerts / History.</li>
-                  <li>Добавлены localStorage-история, алерты и готовность к proxy API.</li>
-                  <li>Есть два режима ответа: demo и live proxy, чтобы приложение работало и без backend.</li>
-                  <li>Сохраняется URL-friendly формат: чистые HTML/CSS/JS без сборки.</li>
-                </ul>
-              </section>
-            </aside>
-          </div>
-        </section>
-
-        <section id="view-multi" class="view">
-          <section class="panel card-stack">
-            <div class="section-head">
-              <div>
-                <p class="eyebrow">Multi-pair</p>
-                <h2>Быстрый скан всех пар</h2>
-              </div>
-              <div class="progress-cluster">
-                <span class="muted-text" id="multiProgressLabel">0%</span>
-                <div class="progress-bar"><span id="multiProgressFill"></span></div>
-              </div>
-            </div>
-            <div id="multiGrid" class="multi-grid empty-state small-empty">
-              <div class="empty-icon">⚡</div>
-              <h3>Мульти-скан ещё не запускался</h3>
-              <p>Нажмите «Все пары», чтобы получить короткий обзор и затем перейти в deep-анализ.</p>
-            </div>
-          </section>
-        </section>
-
-        <section id="view-alerts" class="view">
-          <section class="panel card-stack">
-            <div class="section-head">
-              <div>
-                <p class="eyebrow">Alerts</p>
-                <h2>Зоны входа и уведомления</h2>
-              </div>
-              <button id="requestNotifications" class="ghost-button">Разрешить push</button>
-            </div>
-            <div id="alertsContent" class="empty-state small-empty">
-              <div class="empty-icon">🔔</div>
-              <h3>Алертов пока нет</h3>
-              <p>Добавьте алерт прямо из карточки buy/sell limit.</p>
-            </div>
-          </section>
-        </section>
-
-        <section id="view-history" class="view">
-          <section class="panel card-stack">
-            <div class="section-head">
-              <div>
-                <p class="eyebrow">History</p>
-                <h2>Последние сканы</h2>
-              </div>
-              <button id="clearHistory" class="ghost-button danger-button">Очистить</button>
-            </div>
-            <div id="historyContent" class="empty-state small-empty">
-              <div class="empty-icon">📋</div>
-              <h3>История пуста</h3>
-              <p>После первого скана здесь появятся результаты.</p>
-            </div>
-          </section>
-        </section>
-      </main>
-    </div>
-
-    <script src="app.js"></script>
-  </body>
-</html>
+diff --git a/index.html b/index.html
+index 88106aac8f66cfcbba94c326b2372070a865c68b..9a0675551a338c45511749b09948c68f0cee3fb3 100644
+--- a/index.html
++++ b/index.html
+@@ -1,74 +1,74 @@
+ <!doctype html>
+ <html lang="ru">
+   <head>
+     <meta charset="UTF-8" />
+     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+     <meta name="theme-color" content="#0b1020" />
+     <title>FX Limit Planner Pro</title>
+     <link rel="stylesheet" href="styles.css" />
+   </head>
+   <body>
+     <div class="app-shell">
+       <header class="hero panel">
+         <div>
+           <p class="eyebrow">Android-friendly Forex dashboard</p>
+           <h1>FX Limit Planner Pro</h1>
+           <p class="hero-copy">
+-            Мобильная панель для консервативного intraday/day-trading анализа с
+-            жёстким фильтром <strong>no trade</strong>, макро-контекстом и готовым
+-            планом для buy/sell limit.
++            Улучшенный консервативный planner: подтягивает live-контекст (при наличии API
++            ключей), фильтрует новостной риск, и оставляет только 
++            <strong>buy_limit / sell_limit / no_trade</strong> по строгим правилам D1/H4/H1.
+           </p>
+         </div>
+         <div class="hero-badges">
+           <span>Conservative</span>
+           <span>D1/H4 bias</span>
+           <span>H1 execution</span>
+           <span>News lock</span>
+         </div>
+       </header>
+ 
+       <main class="grid-layout">
+         <section class="panel controls-panel">
+           <div class="panel-title-row">
+             <div>
+               <p class="panel-kicker">Input</p>
+               <h2>Контекст сделки</h2>
+             </div>
+             <button id="loadDemo" class="ghost-button">Демо-сценарий</button>
+           </div>
+ 
+           <div class="field-grid">
+             <label>
+               Валютная пара
+               <select id="pair">
+-                <option>EURUSD</option>
+-                <option>GBPUSD</option>
+-                <option>USDJPY</option>
+-                <option>USDCHF</option>
+-                <option>AUDUSD</option>
+-                <option>USDCAD</option>
++                <option>EUR/USD</option>
++                <option>GBP/USD</option>
++                <option>USD/JPY</option>
++                <option>USD/CHF</option>
++                <option>AUD/USD</option>
++                <option>USD/CAD</option>
+               </select>
+             </label>
+             <label>
+               Режим рынка
+               <select id="regime">
+                 <option value="trend">Trend</option>
+                 <option value="pullback">Pullback</option>
+                 <option value="range">Range</option>
+                 <option value="expansion">Expansion</option>
+                 <option value="compression">Compression</option>
+               </select>
+             </label>
+             <label>
+               D1 bias
+               <select id="d1Bias">
+                 <option value="bullish">Bullish</option>
+                 <option value="bearish">Bearish</option>
+                 <option value="neutral">Neutral</option>
+               </select>
+             </label>
+             <label>
+               H4 bias
+               <select id="h4Bias">
+                 <option value="bullish">Bullish</option>
+                 <option value="bearish">Bearish</option>
+@@ -131,137 +131,165 @@
+               Сильная зона value
+               <select id="zoneType">
+                 <option value="order_block">Order block</option>
+                 <option value="fvg">Fair value gap</option>
+                 <option value="sr">Support / Resistance</option>
+                 <option value="liquidity_retest">Liquidity retest</option>
+               </select>
+             </label>
+           </div>
+ 
+           <div class="toggle-row">
+             <label class="toggle-pill">
+               <input id="liquiditySweep" type="checkbox" checked />
+               <span>Liquidity sweep был</span>
+             </label>
+             <label class="toggle-pill">
+               <input id="sessionAligned" type="checkbox" checked />
+               <span>Session high/low согласованы</span>
+             </label>
+             <label class="toggle-pill">
+               <input id="emaAligned" type="checkbox" checked />
+               <span>EMA фильтр подтверждает</span>
+             </label>
+           </div>
+ 
+-          <button id="generatePlan" class="primary-button">Сформировать план</button>
++          <div class="action-row">
++            <button id="refreshContext" class="ghost-button">Обновить live-контекст</button>
++            <button id="generatePlan" class="primary-button">Сформировать план</button>
++          </div>
+         </section>
+ 
+         <section class="panel summary-panel">
+           <div class="panel-title-row">
+             <div>
+               <p class="panel-kicker">Decision</p>
+               <h2>Приоритетный сценарий</h2>
+             </div>
+             <span id="statusBadge" class="status-badge neutral">WAIT</span>
+           </div>
+ 
+           <div class="score-strip">
+             <article>
+               <span>Setup score</span>
+               <strong id="setupScore">0 / 100</strong>
+             </article>
+             <article>
+               <span>Confidence</span>
+               <strong id="confidenceLabel">Low</strong>
+             </article>
+             <article>
+               <span>News risk</span>
+               <strong id="newsRiskLabel">High</strong>
+             </article>
+           </div>
+ 
+           <div class="plan-card" id="planCard">
+             <h3 id="planHeadline">Ожидание входных данных</h3>
+             <p id="planNarrative">
+-              Выберите параметры рынка и нажмите «Сформировать план», чтобы получить
+-              conservative setup или строгий no_trade.
++              Нажмите «Обновить live-контекст», затем «Сформировать план» для строгого
++              conservative setup либо no_trade.
+             </p>
+             <div class="trade-levels">
+               <div>
+                 <span>Entry</span>
+                 <strong id="entryDisplay">—</strong>
+               </div>
+               <div>
+                 <span>Stop</span>
+                 <strong id="stopDisplay">—</strong>
+               </div>
+               <div>
+                 <span>TP1 / RR</span>
+                 <strong id="tp1Display">—</strong>
+               </div>
+               <div>
+                 <span>TP2 / RR</span>
+                 <strong id="tp2Display">—</strong>
+               </div>
+             </div>
+           </div>
+ 
+           <div class="reason-layout">
+             <article>
+               <h3>Позитивные факторы</h3>
+               <ul id="bullReasons" class="reason-list"></ul>
+             </article>
+             <article>
+               <h3>Ограничения / риски</h3>
+               <ul id="riskReasons" class="reason-list"></ul>
+             </article>
+           </div>
+         </section>
+ 
+         <section class="panel heatmap-panel">
+           <div class="panel-title-row">
+             <div>
+               <p class="panel-kicker">Execution</p>
+               <h2>Limit Heatmap</h2>
+             </div>
+           </div>
+           <div class="heatmap" id="heatmap"></div>
+           <p class="subdued">
+-            Тепловая карта помогает быстро оценить, насколько entry-зона совпадает с
+-            value area, ликвидностью и фильтрами структуры.
++            Тепловая карта отражает в одном экране: структуру, режим рынка, news lock,
++            RR и итоговый сценарий.
+           </p>
+         </section>
+ 
+         <section class="panel output-panel">
+           <div class="panel-title-row">
+             <div>
+               <p class="panel-kicker">Automation</p>
+               <h2>JSON + prompt output</h2>
+             </div>
+             <button id="copyJson" class="ghost-button">Копировать JSON</button>
+           </div>
+           <pre id="jsonOutput" class="json-output"></pre>
+           <textarea id="promptOutput" class="prompt-output" readonly></textarea>
+         </section>
+ 
+         <section class="panel sources-panel">
+           <div class="panel-title-row">
+             <div>
+-              <p class="panel-kicker">Upgrade ideas</p>
+-              <h2>Что здесь лучше базового макета</h2>
++              <p class="panel-kicker">Live sources</p>
++              <h2>API-конфиг и статус данных</h2>
+             </div>
+           </div>
+-          <ul class="feature-list">
+-            <li>News-lock режим блокирует новый вход, если до high-impact news &lt; 60 минут.</li>
+-            <li>Setup score учитывает D1/H4/H1, DXY фон, value zone, liquidity sweep и session alignment.</li>
+-            <li>Отдельно выводится JSON для автоматизации и текстовый prompt для LLM/бота.</li>
+-            <li>Mobile-first layout удобен для Android по URL без отдельного APK.</li>
+-            <li>Строго поддерживается логика no_trade, если условия противоречат профилю conservative trader.</li>
+-          </ul>
++          <div class="field-grid one-col">
++            <label>
++              TwelveData API Key (котировки D1/H4/H1/M15)
++              <input id="twelveDataKey" type="password" placeholder="td_xxx" />
++            </label>
++            <label>
++              FMP API Key (экономический календарь)
++              <input id="fmpKey" type="password" placeholder="fmp_xxx" />
++            </label>
++          </div>
++          <div class="context-grid">
++            <article>
++              <span>Источник цены</span>
++              <strong id="priceSource">manual</strong>
++            </article>
++            <article>
++              <span>Источник календаря</span>
++              <strong id="calendarSource">manual</strong>
++            </article>
++            <article>
++              <span>DXY</span>
++              <strong id="dxySource">manual</strong>
++            </article>
++            <article>
++              <span>Последнее обновление</span>
++              <strong id="lastRefresh">—</strong>
++            </article>
++          </div>
++          <p id="contextStatus" class="subdued">
++            Если live-источники недоступны/без ключей, движок автоматически смещается в
++            no_trade при низкой уверенности подтверждений.
++          </p>
+         </section>
+       </main>
+     </div>
+ 
+     <script src="app.js"></script>
+   </body>
+ </html>
