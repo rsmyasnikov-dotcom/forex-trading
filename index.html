@@ -1,9 +1,9 @@
  (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
 diff --git a/index.html b/index.html
-index 88106aac8f66cfcbba94c326b2372070a865c68b..00c1ae00a710f1e255f8bdb819ea6d362b9ca201 100644
+index 88106aac8f66cfcbba94c326b2372070a865c68b..6a6aea2c79e988076f9829e7e0c04043c6eda515 100644
 --- a/index.html
 +++ b/index.html
-@@ -1,267 +1,379 @@
+@@ -1,267 +1,385 @@
  <!doctype html>
  <html lang="ru">
    <head>
@@ -269,6 +269,7 @@ index 88106aac8f66cfcbba94c326b2372070a865c68b..00c1ae00a710f1e255f8bdb819ea6d36
 +            <button id="refreshContext">Обновить контекст</button>
 +            <button id="generatePlan" class="primary">Сформировать план</button>
            </div>
++          <p id="actionStatus" class="hint" style="margin-top:8px">Готово: интерфейс загружен.</p>
 +        </section>
  
 -          <div class="score-strip">
@@ -411,6 +412,7 @@ index 88106aac8f66cfcbba94c326b2372070a865c68b..00c1ae00a710f1e255f8bdb819ea6d36
 +        bullReasons: document.getElementById("bullReasons"), riskReasons: document.getElementById("riskReasons"), heatmap: document.getElementById("heatmap"),
 +        jsonOutput: document.getElementById("jsonOutput"), promptOutput: document.getElementById("promptOutput"), priceSource: document.getElementById("priceSource"), calendarSource: document.getElementById("calendarSource"), dxySource: document.getElementById("dxySource"), lastRefresh: document.getElementById("lastRefresh"), contextStatus: document.getElementById("contextStatus")
 +      };
++      const actionStatus = document.getElementById("actionStatus");
 +
 +      const state = { live: { price: "manual", calendar: "manual", dxy: "manual", issues: [] } };
 +
@@ -531,6 +533,7 @@ index 88106aac8f66cfcbba94c326b2372070a865c68b..00c1ae00a710f1e255f8bdb819ea6d36
 +
 +      function render() {
 +        const plan = calculate(getInput());
++        actionStatus.textContent = "План успешно обновлён.";
 +        ui.statusBadge.textContent = plan.status.toUpperCase();
 +        ui.statusBadge.className = `badge ${plan.status === "buy_limit" ? "buy" : plan.status === "sell_limit" ? "sell" : "blocked"}`;
 +        ui.setupScore.textContent = `${plan.setup_score} / 100`;
@@ -552,6 +555,7 @@ index 88106aac8f66cfcbba94c326b2372070a865c68b..00c1ae00a710f1e255f8bdb819ea6d36
 +      function loadDemo() {
 +        const demo = { pair:"EUR/USD", regime:"pullback", d1Bias:"bullish", h4Bias:"bullish", h1Trigger:"strong", m15Trigger:"aligned", dxyTone:"contrary", newsMinutes:210, currentPrice:1.0842, entryLow:1.0828, entryHigh:1.0834, stopLoss:1.0812, takeProfit1:1.0876, takeProfit2:1.0898, zoneType:"order_block", liquiditySweep:true, sessionAligned:true, emaAligned:true };
 +        Object.entries(demo).forEach(([k,v]) => (typeof v === "boolean" ? el[k].checked = v : el[k].value = v));
++        actionStatus.textContent = "Демо-сценарий загружен.";
 +        render();
 +      }
 +
@@ -594,6 +598,7 @@ index 88106aac8f66cfcbba94c326b2372070a865c68b..00c1ae00a710f1e255f8bdb819ea6d36
 +        ui.dxySource.textContent = state.live.dxy;
 +        ui.lastRefresh.textContent = new Date().toLocaleString("ru-RU", { hour12: false });
 +        ui.contextStatus.textContent = state.live.issues.length ? `Live-check: ${state.live.issues.join(" | ")}` : "Контекст обновлён успешно.";
++        actionStatus.textContent = "Контекст обновлён.";
 +
 +        render();
 +      }
@@ -609,6 +614,7 @@ index 88106aac8f66cfcbba94c326b2372070a865c68b..00c1ae00a710f1e255f8bdb819ea6d36
 +          setTimeout(() => (b.textContent = "Копировать JSON"), 1200);
 +        } catch {
 +          ui.contextStatus.textContent = "Clipboard недоступен в этом режиме браузера.";
++          actionStatus.textContent = "Не удалось скопировать JSON.";
 +        }
 +      });
 +
