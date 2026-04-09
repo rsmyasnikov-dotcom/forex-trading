@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FX Scanner Pro | Dual AI Engine</title>
+    <title>FX Scanner Pro | Stable Dual AI</title>
     <style>
         :root {
             --bg-main: #060c14; --bg-card: rgba(12, 18, 28, 0.9);
@@ -30,7 +30,7 @@
         .logo-subtitle { font-size: 8px; color: #bbddee; letter-spacing: 2px; }
         .time-info { text-align: right; }
         .clock { font-size: 13px; color: #eef5ff; font-weight: 700; }
-        .session { display: flex; align-items: center; gap: 4px; justify-content: flex-end; }
+        .session { display: flex; alignitems: center; gap: 4px; justify-content: flex-end; }
         .session-dot { width: 5px; height: 5px; border-radius: 50%; }
         .session-name { font-size: 9px; font-weight: 700; }
         .ai-settings-section { background: var(--bg-card-light); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
@@ -43,6 +43,7 @@
         .api-key-input:focus { border-color: var(--accent-green); }
         .api-key-desc { font-size: 10px; color: #8899aa; line-height: 1.5; }
         .api-key-desc a { color: var(--accent-blue); text-decoration: none; }
+        .api-key-desc a:hover { text-decoration: underline; }
         .pair-selector { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
         .pair-selector::-webkit-scrollbar { display: none; }
         .pair-button { flex-shrink: 0; background: var(--bg-card-light); border: 1px solid var(--border-color); border-radius: 20px; padding: 8px 14px; font-size: 12px; color: #aabbcc; cursor: pointer; white-space: nowrap; font-weight: 500; }
@@ -114,7 +115,7 @@
             
             <div id="gemini-key-container" style="display: none;">
                 <select id="gemini-model-select" class="api-key-input">
-                    <option value="gemini-2.0-flash">Модель: Gemini 2.0 Flash (Рекомендуемая)</option>
+                    <option value="gemini-2.0-flash" selected>Модель: Gemini 2.0 Flash (Рекомендуемая)</option>
                     <option value="gemini-1.5-flash">Модель: Gemini 1.5 Flash (Стабильная)</option>
                     <option value="gemini-1.5-pro">Модель: Gemini 1.5 Pro (Тяжелая)</option>
                 </select>
@@ -196,18 +197,15 @@ async function fetchAnalysisFromClaude(apiKey, pair) {
 
 async function fetchAnalysisFromGemini(apiKey, pair) {
     const model = document.getElementById('gemini-model-select').value;
-    // ИСПОЛЬЗУЕМ v1 вместо v1beta для максимальной стабильности
     const url = `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`;
     
     const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            contents: [{ parts:[{ text: buildDeepPrompt(pair) }] }],
-            generationConfig: { response_mime_type: "application/json" }
+            contents: [{ parts:[{ text: buildDeepPrompt(pair) }] }]
         })
     });
-    
     if (!response.ok) {
         const err = await response.json();
         if (response.status === 403 || (err.error && err.error.message && err.error.message.includes("location"))) {
@@ -220,10 +218,11 @@ async function fetchAnalysisFromGemini(apiKey, pair) {
     }
     const data = await response.json();
     if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
-        throw new Error("Gemini вернул пустой ответ (фильтры безопасности).");
+        throw new Error("Gemini вернул пустой ответ. Проверьте ключ или VPN.");
     }
     return extractJSON(data.candidates[0].content.parts[0].text);
 }
+
 
 // ===================================================================================
 // ─── UI КОМПОНЕНТЫ ───────────────────────────────────────────────────────────────
@@ -236,7 +235,7 @@ function createSetupCard(data, isBuy) {
     return `<div class="result-card setup-card ${isBuy ? 'setup-card-buy' : 'setup-card-sell'}">
         <div class="setup-header">
             <div class="setup-title courier ${isBuy ? 'setup-title-buy' : 'setup-title-sell'}">${isBuy ? '▲ BUY LIMIT' : '▼ SELL LIMIT'}</div>
-            <div class="setup-pills courier"><div class="pill pill-confidence" style="border-color:${confColor}; color:${confColor};">${data.confidence}%</div><div class="pill pill-rr">R:R ${rr}</div></div>
+            <div classs="setup-pills courier"><div class="pill pill-confidence" style="border-color:${confColor}; color:${confColor};">${data.confidence}%</div><div class="pill pill-rr">R:R ${rr}</div></div>
         </div>
         <div class="setup-grid courier">
             <div class="grid-item"><div class="label">ВХОД (ЗОНА)</div><div class="value" style="color: var(--accent-yellow);">${data.entry_zone}</div></div>
@@ -252,6 +251,7 @@ function createNoTradeCard(data) {
     if (!data) return '';
     return `<div class="result-card no-trade-card courier"><div class="icon">🚫</div><div class="title">NO TRADE</div><div class="reason">${data.reason}</div>${data.wait_for ? `<div style="padding: 8px 12px; background: rgba(240, 208, 96, 0.07); border: 1px solid rgba(240, 208, 96, 0.22); border-radius: 8px; font-size: 11px; color: #c8b060; text-align: left;"><span style="color: #f0d060;">⏳ ЖДЁМ: </span>${data.wait_for}</div>` : ''}</div>`;
 }
+
 
 // ===================================================================================
 // ─── ГЛАВНОЕ ПРИЛОЖЕНИЕ ────────────────────────────────────────────────────────────
