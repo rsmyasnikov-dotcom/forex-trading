@@ -1,109 +1,67 @@
  (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
 diff --git a/index.html b/index.html
-index 88106aac8f66cfcbba94c326b2372070a865c68b..6a6aea2c79e988076f9829e7e0c04043c6eda515 100644
+index 88106aac8f66cfcbba94c326b2372070a865c68b..331a22416220c647a7946caa90fb7c48ddb61d2a 100644
 --- a/index.html
 +++ b/index.html
-@@ -1,267 +1,385 @@
+@@ -1,267 +1,172 @@
  <!doctype html>
  <html lang="ru">
-   <head>
-     <meta charset="UTF-8" />
-     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+-  <head>
+-    <meta charset="UTF-8" />
+-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 -    <meta name="theme-color" content="#0b1020" />
-     <title>FX Limit Planner Pro</title>
+-    <title>FX Limit Planner Pro</title>
 -    <link rel="stylesheet" href="styles.css" />
-+    <style>
-+      :root {
-+        --bg: #0a1326;
-+        --panel: #121f3a;
-+        --panel2: #182948;
-+        --txt: #eef3ff;
-+        --muted: #9fb0d8;
-+        --ok: #5ef0b2;
-+        --warn: #ffcc73;
-+        --bad: #ff7d93;
-+        --line: rgba(159, 176, 216, 0.22);
-+      }
-+      * { box-sizing: border-box; }
-+      body {
-+        margin: 0;
-+        font-family: Inter, system-ui, Arial, sans-serif;
-+        color: var(--txt);
-+        background: radial-gradient(circle at top, rgba(102, 144, 255, 0.15), transparent 35%), #070d1d;
-+      }
-+      .app { width: min(1200px, calc(100% - 24px)); margin: 20px auto 36px; }
-+      .card {
-+        background: linear-gradient(180deg, var(--panel2), var(--panel));
-+        border: 1px solid var(--line);
-+        border-radius: 20px;
-+        padding: 16px;
-+      }
-+      .hero { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
-+      .hero p { color: var(--muted); line-height: 1.5; }
-+      .chips { display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start; }
-+      .chips span { border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px; font-size: 12px; }
-+      .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; }
-+      .controls,.summary { grid-column: span 6; }
-+      .heat,.out,.sources { grid-column: span 4; }
-+      .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-+      label { display: flex; flex-direction: column; gap: 6px; color: var(--muted); font-size: 13px; }
-+      input,select,textarea {
-+        background: #0a142a; color: var(--txt); border: 1px solid var(--line);
-+        border-radius: 12px; padding: 10px 12px; width: 100%;
-+      }
-+      .actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px; }
-+      button { border: 1px solid var(--line); border-radius: 999px; padding: 10px 12px; background: #21345c; color: var(--txt); cursor: pointer; }
-+      button.primary { background: linear-gradient(135deg, var(--ok), #66b7ff); color: #021019; font-weight: 700; border: none; }
-+      .titleRow { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
-+      .badge { border-radius: 999px; padding: 8px 12px; font-size: 12px; font-weight: 700; }
-+      .neutral { background: rgba(102, 144, 255, 0.2); }
-+      .buy { background: rgba(94, 240, 178, 0.2); color: var(--ok); }
-+      .sell { background: rgba(255, 125, 147, 0.2); color: var(--bad); }
-+      .blocked { background: rgba(255, 204, 115, 0.2); color: var(--warn); }
-+      .kpi { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
-+      .kpi article,.levels>div,.box,.sourceGrid article { background: #0b162d; border: 1px solid var(--line); border-radius: 12px; padding: 10px; }
-+      .kpi span,.levels span,.sourceGrid span { color: var(--muted); display: block; font-size: 12px; margin-bottom: 4px; }
-+      .levels { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-+      .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-+      ul { margin: 8px 0 0; padding-left: 16px; color: var(--muted); line-height: 1.45; }
-+      .heatmap { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; }
-+      .tile { border-radius: 12px; border: 1px solid var(--line); padding: 10px; background: #0b162d; }
-+      .tile.good { outline: 1px solid rgba(94,240,178,.35); }
-+      .tile.warn { outline: 1px solid rgba(255,204,115,.35); }
-+      .tile.bad { outline: 1px solid rgba(255,125,147,.35); }
-+      pre { background:#071224; border:1px solid var(--line); border-radius:12px; min-height:220px; overflow:auto; padding:10px; }
-+      textarea { min-height: 150px; margin-top: 8px; }
-+      .sourceGrid { display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
-+      .hint { color: var(--muted); font-size: 13px; }
-+      @media (max-width: 1000px){ .controls,.summary,.heat,.out,.sources { grid-column: 1 / -1; } }
-+      @media (max-width: 680px){ .row2,.kpi,.levels,.cols,.sourceGrid,.heatmap,.actions { grid-template-columns: 1fr; } }
-+    </style>
-   </head>
-   <body>
+-  </head>
+-  <body>
 -    <div class="app-shell">
 -      <header class="hero panel">
-+    <div class="app">
-+      <section class="card hero">
-         <div>
+-        <div>
 -          <p class="eyebrow">Android-friendly Forex dashboard</p>
-           <h1>FX Limit Planner Pro</h1>
+-          <h1>FX Limit Planner Pro</h1>
 -          <p class="hero-copy">
 -            Мобильная панель для консервативного intraday/day-trading анализа с
 -            жёстким фильтром <strong>no trade</strong>, макро-контекстом и готовым
 -            планом для buy/sell limit.
 -          </p>
-+          <p>Консервативный day-trading планировщик: D1/H4 задаёт направление, H1 принимает решение о входе, M15 только уточняет тайминг. Если качество низкое — только <b>no_trade</b>.</p>
-         </div>
+-        </div>
 -        <div class="hero-badges">
 -          <span>Conservative</span>
 -          <span>D1/H4 bias</span>
 -          <span>H1 execution</span>
 -          <span>News lock</span>
-+        <div class="chips">
-+          <span>Conservative</span><span>D1/H4 bias</span><span>H1 trigger</span><span>News lock</span>
-         </div>
+-        </div>
 -      </header>
--
++<head>
++  <meta charset="UTF-8" />
++  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
++  <title>FX Limit Planner Pro</title>
++  <style>
++    body{margin:0;font-family:Arial,sans-serif;background:#0b1220;color:#eef3ff}
++    .wrap{max-width:1100px;margin:16px auto;padding:0 12px}
++    .panel{background:#14213d;border:1px solid #2e3f66;border-radius:14px;padding:14px;margin-bottom:12px}
++    .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
++    label{display:flex;flex-direction:column;font-size:13px;color:#b9c8ef;gap:4px}
++    input,select,textarea,button{font:inherit}
++    input,select,textarea{padding:9px;border-radius:10px;border:1px solid #2e3f66;background:#0d1933;color:#eef3ff}
++    button{padding:10px 12px;border-radius:999px;border:1px solid #2e3f66;background:#233760;color:#fff;cursor:pointer}
++    .primary{background:#58e7a9;color:#042018;border:none;font-weight:700}
++    .row{display:flex;gap:8px;flex-wrap:wrap}
++    .badge{padding:6px 10px;border-radius:999px;background:#243d70;font-size:12px;font-weight:700}
++    .kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
++    .box{background:#0d1933;border:1px solid #2e3f66;border-radius:10px;padding:10px}
++    .muted{color:#b9c8ef;font-size:13px}
++    pre{background:#071126;border:1px solid #2e3f66;border-radius:10px;padding:10px;min-height:180px;overflow:auto}
++    @media(max-width:800px){.grid,.kpi{grid-template-columns:1fr}}
++  </style>
++</head>
++<body>
++  <div class="wrap">
++    <div class="panel">
++      <h1 style="margin:0 0 8px">FX Limit Planner Pro</h1>
++      <p class="muted" style="margin:0">Рабочий, читабельный и полностью статический планировщик. Если сетап слабый — только <b>no_trade</b>.</p>
++    </div>
+ 
 -      <main class="grid-layout">
 -        <section class="panel controls-panel">
 -          <div class="panel-title-row">
@@ -113,7 +71,35 @@ index 88106aac8f66cfcbba94c326b2372070a865c68b..6a6aea2c79e988076f9829e7e0c04043
 -            </div>
 -            <button id="loadDemo" class="ghost-button">Демо-сценарий</button>
 -          </div>
-+      </section>
++    <div class="panel">
++      <h2 style="margin:0 0 10px">Контекст сделки</h2>
++      <div class="grid">
++        <label>Пара<select id="pair"><option>EUR/USD</option><option>GBP/USD</option><option>USD/JPY</option><option>USD/CHF</option></select></label>
++        <label>Режим<select id="regime"><option value="trend">Trend</option><option value="pullback">Pullback</option><option value="range">Range</option></select></label>
++        <label>D1 bias<select id="d1Bias"><option value="bullish">Bullish</option><option value="bearish">Bearish</option><option value="neutral">Neutral</option></select></label>
++        <label>H4 bias<select id="h4Bias"><option value="bullish">Bullish</option><option value="bearish">Bearish</option><option value="neutral">Neutral</option></select></label>
++        <label>H1 trigger<select id="h1Trigger"><option value="strong">Strong</option><option value="mixed">Mixed</option><option value="weak">Weak</option></select></label>
++        <label>M15 trigger<select id="m15Trigger"><option value="aligned">Aligned</option><option value="optional">Optional</option><option value="conflict">Conflict</option></select></label>
++        <label>DXY tone<select id="dxyTone"><option value="supportive">Supportive</option><option value="neutral">Neutral</option><option value="contrary">Contrary</option></select></label>
++        <label>Новости до high-impact (мин)<input id="newsMinutes" type="number" value="180" min="0" step="5"/></label>
++        <label>Entry low<input id="entryLow" type="number" step="0.0001" value="1.0828"/></label>
++        <label>Entry high<input id="entryHigh" type="number" step="0.0001" value="1.0834"/></label>
++        <label>Stop loss<input id="stopLoss" type="number" step="0.0001" value="1.0812"/></label>
++        <label>TP1<input id="takeProfit1" type="number" step="0.0001" value="1.0876"/></label>
++        <label>TP2<input id="takeProfit2" type="number" step="0.0001" value="1.0898"/></label>
++      </div>
++      <div class="row" style="margin:10px 0">
++        <label><input id="liquiditySweep" type="checkbox" checked/> Liquidity sweep</label>
++        <label><input id="sessionAligned" type="checkbox" checked/> Session aligned</label>
++        <label><input id="emaAligned" type="checkbox" checked/> EMA aligned</label>
++      </div>
++      <div class="row">
++        <button onclick="loadDemo()">Демо</button>
++        <button onclick="refreshContext()">Обновить контекст</button>
++        <button class="primary" onclick="renderPlan()">Сформировать план</button>
++      </div>
++      <p id="statusText" class="muted" style="margin:10px 0 0">Готово.</p>
++    </div>
  
 -          <div class="field-grid">
 -            <label>
@@ -214,27 +200,29 @@ index 88106aac8f66cfcbba94c326b2372070a865c68b..6a6aea2c79e988076f9829e7e0c04043
 -                <option value="liquidity_retest">Liquidity retest</option>
 -              </select>
 -            </label>
-+      <main class="grid">
-+        <section class="card controls">
-+          <div class="titleRow"><h2>Контекст сделки</h2></div>
-+          <div class="row2">
-+            <label>Валютная пара<select id="pair"><option>EUR/USD</option><option>GBP/USD</option><option>USD/JPY</option><option>USD/CHF</option><option>AUD/USD</option><option>USD/CAD</option></select></label>
-+            <label>Режим рынка<select id="regime"><option value="trend">Trend</option><option value="pullback">Pullback</option><option value="range">Range</option><option value="expansion">Expansion</option><option value="compression">Compression</option></select></label>
-+            <label>D1 bias<select id="d1Bias"><option value="bullish">Bullish</option><option value="bearish">Bearish</option><option value="neutral">Neutral</option></select></label>
-+            <label>H4 bias<select id="h4Bias"><option value="bullish">Bullish</option><option value="bearish">Bearish</option><option value="neutral">Neutral</option></select></label>
-+            <label>H1 trigger<select id="h1Trigger"><option value="strong">Strong</option><option value="mixed">Mixed</option><option value="weak">Weak</option></select></label>
-+            <label>M15 trigger<select id="m15Trigger"><option value="aligned">Aligned</option><option value="optional">Optional</option><option value="conflict">Conflict</option></select></label>
-+            <label>DXY tone<select id="dxyTone"><option value="supportive">Supportive</option><option value="neutral">Neutral</option><option value="contrary">Contrary</option></select></label>
-+            <label>Новости до high-impact (мин)<input id="newsMinutes" type="number" value="180" min="0" step="5"/></label>
-+            <label>Текущая цена<input id="currentPrice" type="number" step="0.0001" value="1.0842"/></label>
-+            <label>Entry low<input id="entryLow" type="number" step="0.0001" value="1.0828"/></label>
-+            <label>Entry high<input id="entryHigh" type="number" step="0.0001" value="1.0834"/></label>
-+            <label>Stop loss<input id="stopLoss" type="number" step="0.0001" value="1.0812"/></label>
-+            <label>TP1<input id="takeProfit1" type="number" step="0.0001" value="1.0876"/></label>
-+            <label>TP2<input id="takeProfit2" type="number" step="0.0001" value="1.0898"/></label>
-+            <label>Value zone<select id="zoneType"><option value="order_block">Order block</option><option value="fvg">Fair value gap</option><option value="sr">Support/Resistance</option><option value="liquidity_retest">Liquidity retest</option></select></label>
-           </div>
--
+-          </div>
++    <div class="panel">
++      <div class="row" style="justify-content:space-between;align-items:center">
++        <h2 style="margin:0">Результат</h2>
++        <span id="statusBadge" class="badge">WAIT</span>
++      </div>
++      <div class="kpi" style="margin-top:10px">
++        <div class="box"><div class="muted">Setup score</div><b id="setupScore">0 / 100</b></div>
++        <div class="box"><div class="muted">Confidence</div><b id="confidence">LOW</b></div>
++        <div class="box"><div class="muted">News risk</div><b id="newsRisk">HIGH</b></div>
++      </div>
++      <div class="grid" style="margin-top:10px">
++        <div class="box"><div class="muted">Entry</div><b id="entryOut">—</b></div>
++        <div class="box"><div class="muted">Stop</div><b id="stopOut">—</b></div>
++        <div class="box"><div class="muted">TP1 / RR</div><b id="tp1Out">—</b></div>
++        <div class="box"><div class="muted">TP2 / RR</div><b id="tp2Out">—</b></div>
++      </div>
++      <div class="grid" style="margin-top:10px">
++        <div class="box"><h3 style="margin:0 0 8px">Позитив</h3><ul id="plusList"></ul></div>
++        <div class="box"><h3 style="margin:0 0 8px">Риски</h3><ul id="riskList"></ul></div>
++      </div>
++    </div>
+ 
 -          <div class="toggle-row">
 -            <label class="toggle-pill">
 -              <input id="liquiditySweep" type="checkbox" checked />
@@ -248,15 +236,25 @@ index 88106aac8f66cfcbba94c326b2372070a865c68b..6a6aea2c79e988076f9829e7e0c04043
 -              <input id="emaAligned" type="checkbox" checked />
 -              <span>EMA фильтр подтверждает</span>
 -            </label>
-+          <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px">
-+            <label><input id="liquiditySweep" type="checkbox" checked/> Liquidity sweep</label>
-+            <label><input id="sessionAligned" type="checkbox" checked/> Session high/low aligned</label>
-+            <label><input id="emaAligned" type="checkbox" checked/> EMA filter aligned</label>
-           </div>
--
+-          </div>
++    <div class="panel">
++      <div class="row" style="justify-content:space-between;align-items:center">
++        <h2 style="margin:0">JSON</h2>
++        <button onclick="copyJson()">Копировать JSON</button>
++      </div>
++      <pre id="jsonOut"></pre>
++      <textarea id="promptOut" readonly></textarea>
++    </div>
++  </div>
+ 
 -          <button id="generatePlan" class="primary-button">Сформировать план</button>
 -        </section>
--
++<script>
++  function v(id){return document.getElementById(id)}
++  function num(id){return Number(v(id).value)}
++  function pairDigits(pair){return pair.includes('JPY')?3:4}
++  function fmt(pair,n){return Number(n).toFixed(pairDigits(pair))}
+ 
 -        <section class="panel summary-panel">
 -          <div class="panel-title-row">
 -            <div>
@@ -264,13 +262,13 @@ index 88106aac8f66cfcbba94c326b2372070a865c68b..6a6aea2c79e988076f9829e7e0c04043
 -              <h2>Приоритетный сценарий</h2>
 -            </div>
 -            <span id="statusBadge" class="status-badge neutral">WAIT</span>
-+          <div class="actions">
-+            <button id="loadDemo">Демо</button>
-+            <button id="refreshContext">Обновить контекст</button>
-+            <button id="generatePlan" class="primary">Сформировать план</button>
-           </div>
-+          <p id="actionStatus" class="hint" style="margin-top:8px">Готово: интерфейс загружен.</p>
-+        </section>
+-          </div>
++  function calc(){
++    const pair=v('pair').value;
++    const d1=v('d1Bias').value,h4=v('h4Bias').value,h1=v('h1Trigger').value,m15=v('m15Trigger').value;
++    const news=num('newsMinutes'),low=num('entryLow'),high=num('entryHigh'),sl=num('stopLoss'),tp1=num('takeProfit1'),tp2=num('takeProfit2');
++    const mid=(low+high)/2; const risk=Math.max(Math.abs(mid-sl), pair.includes('JPY')?0.01:0.0001);
++    let score=45,dir='no_trade'; const plus=[],risks=[];
  
 -          <div class="score-strip">
 -            <article>
@@ -285,17 +283,19 @@ index 88106aac8f66cfcbba94c326b2372070a865c68b..6a6aea2c79e988076f9829e7e0c04043
 -              <span>News risk</span>
 -              <strong id="newsRiskLabel">High</strong>
 -            </article>
-+        <section class="card summary">
-+          <div class="titleRow"><h2>Приоритетный сценарий</h2><span id="statusBadge" class="badge neutral">WAIT</span></div>
-+          <div class="kpi">
-+            <article><span>Setup score</span><strong id="setupScore">0 / 100</strong></article>
-+            <article><span>Confidence</span><strong id="confidenceLabel">LOW</strong></article>
-+            <article><span>News risk</span><strong id="newsRiskLabel">HIGH</strong></article>
-           </div>
--
+-          </div>
++    if(low>=high){return {status:'no_trade',setup_score:0,confidence:'low',news_risk:'high',entry_zone_low:low,entry_zone_high:high,stop_loss:sl,tp1,tp2,rr1:0,rr2:0,plus:[],risks:['Entry low >= Entry high'],headline:'No trade'};}
++    if(d1===h4 && d1!=='neutral'){score+=20;dir=d1==='bullish'?'buy_limit':'sell_limit';plus.push('D1/H4 aligned');} else {score-=24;risks.push('D1/H4 conflict');}
++    if(h1==='strong'){score+=14;plus.push('H1 strong');} else if(h1==='mixed'){score+=3;risks.push('H1 mixed');} else {score-=14;risks.push('H1 weak');}
++    if(m15==='aligned')score+=6; if(m15==='conflict'){score-=10;risks.push('M15 conflict');}
++    if(news<60){score-=35;risks.push('News < 60m');} else if(news<180){score-=8;risks.push('News close');} else plus.push('News window OK');
++    if(v('dxyTone').value==='supportive')score+=8; if(v('dxyTone').value==='contrary'){score-=9;risks.push('DXY contrary');}
++    if(v('liquiditySweep').checked)score+=5; if(v('sessionAligned').checked)score+=4; if(v('emaAligned').checked)score+=3;
++    const rr1=(tp1-mid)/risk, rr2=(tp2-mid)/risk;
++    if(rr1>=2.2 && rr2>=3.2){score+=10;plus.push('RR pass');} else {score-=18;risks.push('RR low');}
+ 
 -          <div class="plan-card" id="planCard">
-+          <div class="box">
-             <h3 id="planHeadline">Ожидание входных данных</h3>
+-            <h3 id="planHeadline">Ожидание входных данных</h3>
 -            <p id="planNarrative">
 -              Выберите параметры рынка и нажмите «Сформировать план», чтобы получить
 -              conservative setup или строгий no_trade.
@@ -317,15 +317,13 @@ index 88106aac8f66cfcbba94c326b2372070a865c68b..6a6aea2c79e988076f9829e7e0c04043
 -                <span>TP2 / RR</span>
 -                <strong id="tp2Display">—</strong>
 -              </div>
-+            <p id="planNarrative" class="hint">Нажмите «Сформировать план», чтобы получить buy/sell limit либо no_trade.</p>
-+            <div class="levels">
-+              <div><span>Entry</span><strong id="entryDisplay">—</strong></div>
-+              <div><span>Stop</span><strong id="stopDisplay">—</strong></div>
-+              <div><span>TP1 / RR</span><strong id="tp1Display">—</strong></div>
-+              <div><span>TP2 / RR</span><strong id="tp2Display">—</strong></div>
-             </div>
-           </div>
--
+-            </div>
+-          </div>
++    score=Math.max(0,Math.min(100,Math.round(score)));
++    const confidence=score>=78?'high':score>=62?'medium':'low';
++    const newsRisk=news<60?'high':news<180?'medium':'low';
++    if(news<60 || score<62 || rr1<2.2 || rr2<3.2) dir='no_trade';
+ 
 -          <div class="reason-layout">
 -            <article>
 -              <h3>Позитивные факторы</h3>
@@ -335,11 +333,15 @@ index 88106aac8f66cfcbba94c326b2372070a865c68b..6a6aea2c79e988076f9829e7e0c04043
 -              <h3>Ограничения / риски</h3>
 -              <ul id="riskReasons" class="reason-list"></ul>
 -            </article>
-+          <div class="cols" style="margin-top:10px">
-+            <article class="box"><h3>Позитивные факторы</h3><ul id="bullReasons"></ul></article>
-+            <article class="box"><h3>Риски</h3><ul id="riskReasons"></ul></article>
-           </div>
-         </section>
+-          </div>
+-        </section>
++    return {
++      pair:pair.replace('/',''),status:dir,setup_score:score,confidence,news_risk:newsRisk,
++      entry_zone_low:Number(fmt(pair,low)),entry_zone_high:Number(fmt(pair,high)),stop_loss:Number(fmt(pair,sl)),tp1:Number(fmt(pair,tp1)),tp2:Number(fmt(pair,tp2)),
++      rr1:Number(rr1.toFixed(2)),rr2:Number(rr2.toFixed(2)),plus,risks,
++      headline: dir==='buy_limit'?'Buy limit приоритетен':dir==='sell_limit'?'Sell limit приоритетен':'No trade'
++    };
++  }
  
 -        <section class="panel heatmap-panel">
 -          <div class="panel-title-row">
@@ -354,7 +356,7 @@ index 88106aac8f66cfcbba94c326b2372070a865c68b..6a6aea2c79e988076f9829e7e0c04043
 -            value area, ликвидностью и фильтрами структуры.
 -          </p>
 -        </section>
-+        <section class="card heat"><h2>Limit Heatmap</h2><div id="heatmap" class="heatmap"></div></section>
++  function list(el,arr,fallback){el.innerHTML='';(arr.length?arr:[fallback]).forEach(x=>{const li=document.createElement('li');li.textContent=x;el.appendChild(li);});}
  
 -        <section class="panel output-panel">
 -          <div class="panel-title-row">
@@ -366,11 +368,24 @@ index 88106aac8f66cfcbba94c326b2372070a865c68b..6a6aea2c79e988076f9829e7e0c04043
 -          </div>
 -          <pre id="jsonOutput" class="json-output"></pre>
 -          <textarea id="promptOutput" class="prompt-output" readonly></textarea>
-+        <section class="card out">
-+          <div class="titleRow"><h2>JSON + Prompt</h2><button id="copyJson">Копировать JSON</button></div>
-+          <pre id="jsonOutput"></pre>
-+          <textarea id="promptOutput" readonly></textarea>
-         </section>
+-        </section>
++  function renderPlan(){
++    const p=calc();
++    v('statusText').textContent='План пересчитан.';
++    v('statusBadge').textContent=p.status.toUpperCase();
++    v('statusBadge').style.background=p.status==='buy_limit'?'#1d5e4a':p.status==='sell_limit'?'#5c2435':'#644f2a';
++    v('setupScore').textContent=`${p.setup_score} / 100`;
++    v('confidence').textContent=p.confidence.toUpperCase();
++    v('newsRisk').textContent=p.news_risk.toUpperCase();
++    v('entryOut').textContent=`${p.entry_zone_low} - ${p.entry_zone_high}`;
++    v('stopOut').textContent=`${p.stop_loss}`;
++    v('tp1Out').textContent=`${p.tp1} / ${p.rr1}`;
++    v('tp2Out').textContent=`${p.tp2} / ${p.rr2}`;
++    list(v('plusList'),p.plus,'Недостаточно подтверждений.');
++    list(v('riskList'),p.risks,'Критичных рисков нет.');
++    v('jsonOut').textContent=JSON.stringify(p,null,2);
++    v('promptOut').value=`Pair: ${p.pair}\nStatus: ${p.status}\nScore: ${p.setup_score}\nRR: ${p.rr1}/${p.rr2}`;
++  }
  
 -        <section class="panel sources-panel">
 -          <div class="panel-title-row">
@@ -378,18 +393,7 @@ index 88106aac8f66cfcbba94c326b2372070a865c68b..6a6aea2c79e988076f9829e7e0c04043
 -              <p class="panel-kicker">Upgrade ideas</p>
 -              <h2>Что здесь лучше базового макета</h2>
 -            </div>
-+        <section class="card sources">
-+          <h2>Live источники</h2>
-+          <div class="row2">
-+            <label>TwelveData API key<input id="twelveDataKey" type="password" placeholder="td_xxx"/></label>
-+            <label>FMP API key<input id="fmpKey" type="password" placeholder="fmp_xxx"/></label>
-+          </div>
-+          <div class="sourceGrid">
-+            <article><span>Источник цены</span><strong id="priceSource">manual</strong></article>
-+            <article><span>Источник календаря</span><strong id="calendarSource">manual</strong></article>
-+            <article><span>DXY</span><strong id="dxySource">manual</strong></article>
-+            <article><span>Последнее обновление</span><strong id="lastRefresh">—</strong></article>
-           </div>
+-          </div>
 -          <ul class="feature-list">
 -            <li>News-lock режим блокирует новый вход, если до high-impact news &lt; 60 минут.</li>
 -            <li>Setup score учитывает D1/H4/H1, DXY фон, value zone, liquidity sweep и session alignment.</li>
@@ -397,230 +401,32 @@ index 88106aac8f66cfcbba94c326b2372070a865c68b..6a6aea2c79e988076f9829e7e0c04043
 -            <li>Mobile-first layout удобен для Android по URL без отдельного APK.</li>
 -            <li>Строго поддерживается логика no_trade, если условия противоречат профилю conservative trader.</li>
 -          </ul>
-+          <p id="contextStatus" class="hint">Если API ключей нет, модуль работает в ручном режиме и становится более консервативным.</p>
-         </section>
-       </main>
-     </div>
+-        </section>
+-      </main>
+-    </div>
++  function loadDemo(){
++    v('pair').value='EUR/USD'; v('regime').value='pullback'; v('d1Bias').value='bullish'; v('h4Bias').value='bullish';
++    v('h1Trigger').value='strong'; v('m15Trigger').value='aligned'; v('dxyTone').value='contrary';
++    v('newsMinutes').value=210; v('entryLow').value=1.0828; v('entryHigh').value=1.0834; v('stopLoss').value=1.0812; v('takeProfit1').value=1.0876; v('takeProfit2').value=1.0898;
++    v('statusText').textContent='Демо загружено.';
++    renderPlan();
++  }
++
++  async function refreshContext(){
++    v('statusText').textContent='Контекст обновлён (базовый офлайн режим).';
++    renderPlan();
++  }
++
++  async function copyJson(){
++    try{await navigator.clipboard.writeText(v('jsonOut').textContent);v('statusText').textContent='JSON скопирован.'}
++    catch{v('statusText').textContent='Clipboard недоступен.'}
++  }
  
 -    <script src="app.js"></script>
-+    <script>
-+      const ids = ["pair","regime","d1Bias","h4Bias","h1Trigger","m15Trigger","dxyTone","newsMinutes","currentPrice","entryLow","entryHigh","stopLoss","takeProfit1","takeProfit2","zoneType","liquiditySweep","sessionAligned","emaAligned","twelveDataKey","fmpKey"];
-+      const el = Object.fromEntries(ids.map((id) => [id, document.getElementById(id)]));
-+      const ui = {
-+        statusBadge: document.getElementById("statusBadge"), setupScore: document.getElementById("setupScore"), confidenceLabel: document.getElementById("confidenceLabel"), newsRiskLabel: document.getElementById("newsRiskLabel"),
-+        planHeadline: document.getElementById("planHeadline"), planNarrative: document.getElementById("planNarrative"), entryDisplay: document.getElementById("entryDisplay"), stopDisplay: document.getElementById("stopDisplay"), tp1Display: document.getElementById("tp1Display"), tp2Display: document.getElementById("tp2Display"),
-+        bullReasons: document.getElementById("bullReasons"), riskReasons: document.getElementById("riskReasons"), heatmap: document.getElementById("heatmap"),
-+        jsonOutput: document.getElementById("jsonOutput"), promptOutput: document.getElementById("promptOutput"), priceSource: document.getElementById("priceSource"), calendarSource: document.getElementById("calendarSource"), dxySource: document.getElementById("dxySource"), lastRefresh: document.getElementById("lastRefresh"), contextStatus: document.getElementById("contextStatus")
-+      };
-+      const actionStatus = document.getElementById("actionStatus");
-+
-+      const state = { live: { price: "manual", calendar: "manual", dxy: "manual", issues: [] } };
-+
-+      const pairClean = (p) => p.replace("/", "");
-+      const digits = (p) => pairClean(p).includes("JPY") ? 3 : 4;
-+      const pip = (p) => pairClean(p).includes("JPY") ? 0.01 : 0.0001;
-+      const fmt = (p, n) => Number(n).toFixed(digits(p));
-+
-+      function getInput() {
-+        return {
-+          pair: el.pair.value, regime: el.regime.value, d1Bias: el.d1Bias.value, h4Bias: el.h4Bias.value, h1Trigger: el.h1Trigger.value, m15Trigger: el.m15Trigger.value,
-+          dxyTone: el.dxyTone.value, newsMinutes: Number(el.newsMinutes.value), currentPrice: Number(el.currentPrice.value),
-+          entryLow: Number(el.entryLow.value), entryHigh: Number(el.entryHigh.value), stopLoss: Number(el.stopLoss.value), takeProfit1: Number(el.takeProfit1.value), takeProfit2: Number(el.takeProfit2.value),
-+          zoneType: el.zoneType.value, liquiditySweep: el.liquiditySweep.checked, sessionAligned: el.sessionAligned.checked, emaAligned: el.emaAligned.checked
-+        };
-+      }
-+
-+      function calculate(input) {
-+        const mid = (input.entryLow + input.entryHigh) / 2;
-+        const buyRisk = Math.max(mid - input.stopLoss, pip(input.pair));
-+        const sellRisk = Math.max(input.stopLoss - mid, pip(input.pair));
-+        let direction = "no_trade";
-+        let score = 44;
-+        const pos = [];
-+        const risk = [];
-+
-+        if (input.entryLow >= input.entryHigh) {
-+          return { status: "no_trade", setup_score: 0, confidence: "low", news_risk: "high", headline: "No trade", narrative: "Entry low должен быть меньше entry high.", reasoning: [], risks: ["Некорректная entry zone."], rr_tp1: 0, rr_tp2: 0, entry_zone_low: input.entryLow, entry_zone_high: input.entryHigh, stop_loss: input.stopLoss, tp1: input.takeProfit1, tp2: input.takeProfit2, pair: pairClean(input.pair) };
-+        }
-+
-+        if (input.d1Bias === input.h4Bias && input.d1Bias !== "neutral") {
-+          direction = input.d1Bias === "bullish" ? "buy_limit" : "sell_limit";
-+          score += 20;
-+          pos.push("D1/H4 совпадают по направлению.");
-+        } else {
-+          score -= 24;
-+          risk.push("D1/H4 не совпадают.");
-+        }
-+
-+        if (input.h1Trigger === "strong") { score += 14; pos.push("H1 trigger сильный."); }
-+        else if (input.h1Trigger === "mixed") { score += 3; risk.push("H1 подтверждение среднее."); }
-+        else { score -= 14; risk.push("H1 trigger слабый."); }
-+
-+        if (input.m15Trigger === "aligned") score += 6;
-+        if (input.m15Trigger === "conflict") { score -= 10; risk.push("M15 конфликтует с H1/H4/D1."); }
-+
-+        if (input.newsMinutes < 60) { score -= 35; risk.push("До high-impact новости < 60 минут."); }
-+        else if (input.newsMinutes < 180) { score -= 8; risk.push("Новости близко."); }
-+        else pos.push("Новостное окно безопасно.");
-+
-+        if (input.dxyTone === "supportive") score += 8;
-+        if (input.dxyTone === "contrary") { score -= 9; risk.push("DXY против позиции."); }
-+
-+        if (["trend", "pullback"].includes(input.regime)) score += 8;
-+        if (input.regime === "compression") score -= 11;
-+        if (input.regime === "expansion") score -= 9;
-+
-+        if (["order_block", "liquidity_retest"].includes(input.zoneType)) score += 7;
-+        if (input.liquiditySweep) score += 5; else risk.push("Нет sweep ликвидности.");
-+        if (input.sessionAligned) score += 4; else risk.push("Session high/low не выровнены.");
-+        if (input.emaAligned) score += 3;
-+
-+        const rr1 = direction === "sell_limit" ? (mid - input.takeProfit1) / sellRisk : (input.takeProfit1 - mid) / buyRisk;
-+        const rr2 = direction === "sell_limit" ? (mid - input.takeProfit2) / sellRisk : (input.takeProfit2 - mid) / buyRisk;
-+        if (rr1 >= 2.2 && rr2 >= 3.2) { score += 10; pos.push(`RR пройден (${rr1.toFixed(2)} / ${rr2.toFixed(2)}).`); }
-+        else { score -= 18; risk.push("RR ниже требуемого (2.2 / 3.2)."); }
-+
-+        if (state.live.price === "manual" && state.live.calendar === "manual") {
-+          score -= 8;
-+          risk.push("Live-данные не обновлены.");
-+        }
-+
-+        const final = Math.max(0, Math.min(100, Math.round(score)));
-+        const confidence = final >= 78 ? "high" : final >= 62 ? "medium" : "low";
-+        const newsRisk = input.newsMinutes < 60 ? "high" : input.newsMinutes < 180 ? "medium" : "low";
-+
-+        if (input.newsMinutes < 60 || final < 62 || rr1 < 2.2 || rr2 < 3.2) direction = "no_trade";
-+
-+        const headline = direction === "buy_limit" ? "Buy limit приоритетен" : direction === "sell_limit" ? "Sell limit приоритетен" : "No trade — ждать сетап выше качеством";
-+        const narrative = direction === "no_trade"
-+          ? "Условия рынка/риска не прошли conservative фильтр."
-+          : `Вход ${direction} в зоне ${fmt(input.pair, input.entryLow)}-${fmt(input.pair, input.entryHigh)} при сохранении структуры.`;
-+
-+        return {
-+          pair: pairClean(input.pair), status: direction, bias: input.d1Bias === input.h4Bias ? input.d1Bias : "neutral", market_regime: input.regime,
-+          entry_zone_low: Number(fmt(input.pair, input.entryLow)), entry_zone_high: Number(fmt(input.pair, input.entryHigh)), ideal_entry: Number(fmt(input.pair, mid)),
-+          stop_loss: Number(fmt(input.pair, input.stopLoss)), tp1: Number(fmt(input.pair, input.takeProfit1)), tp2: Number(fmt(input.pair, input.takeProfit2)),
-+          rr_tp1: Number(rr1.toFixed(2)), rr_tp2: Number(rr2.toFixed(2)), setup_score: final, confidence, news_risk: newsRisk, headline, narrative,
-+          reasoning: pos, risks: risk, live_sources: { price: state.live.price, calendar: state.live.calendar, dxy: state.live.dxy }
-+        };
-+      }
-+
-+      function renderList(target, items, fallback) {
-+        target.innerHTML = "";
-+        (items.length ? items : [fallback]).forEach((x) => {
-+          const li = document.createElement("li");
-+          li.textContent = x;
-+          target.appendChild(li);
-+        });
-+      }
-+
-+      function renderHeat(plan) {
-+        const tiles = [
-+          ["Structure", plan.bias === "neutral" ? "mixed" : plan.bias, plan.bias === "neutral" ? "warn" : "good"],
-+          ["Regime", plan.market_regime, ["trend","pullback"].includes(plan.market_regime) ? "good" : "warn"],
-+          ["News", plan.news_risk, plan.news_risk === "low" ? "good" : plan.news_risk === "medium" ? "warn" : "bad"],
-+          ["RR", `${plan.rr_tp1}/${plan.rr_tp2}`, plan.rr_tp1 >= 2.2 && plan.rr_tp2 >= 3.2 ? "good" : "bad"],
-+          ["Decision", plan.status, plan.status === "no_trade" ? "warn" : "good"]
-+        ];
-+        ui.heatmap.innerHTML = "";
-+        tiles.forEach(([label,val,cls]) => {
-+          const el = document.createElement("article");
-+          el.className = `tile ${cls}`;
-+          el.innerHTML = `<span style='color:var(--muted);font-size:12px'>${label}</span><strong>${val}</strong>`;
-+          ui.heatmap.appendChild(el);
-+        });
-+      }
-+
-+      function render() {
-+        const plan = calculate(getInput());
-+        actionStatus.textContent = "План успешно обновлён.";
-+        ui.statusBadge.textContent = plan.status.toUpperCase();
-+        ui.statusBadge.className = `badge ${plan.status === "buy_limit" ? "buy" : plan.status === "sell_limit" ? "sell" : "blocked"}`;
-+        ui.setupScore.textContent = `${plan.setup_score} / 100`;
-+        ui.confidenceLabel.textContent = plan.confidence.toUpperCase();
-+        ui.newsRiskLabel.textContent = plan.news_risk.toUpperCase();
-+        ui.planHeadline.textContent = plan.headline;
-+        ui.planNarrative.textContent = plan.narrative;
-+        ui.entryDisplay.textContent = `${plan.entry_zone_low} - ${plan.entry_zone_high}`;
-+        ui.stopDisplay.textContent = `${plan.stop_loss}`;
-+        ui.tp1Display.textContent = `${plan.tp1} / ${plan.rr_tp1}`;
-+        ui.tp2Display.textContent = `${plan.tp2} / ${plan.rr_tp2}`;
-+        renderList(ui.bullReasons, plan.reasoning, "Недостаточно позитивных подтверждений.");
-+        renderList(ui.riskReasons, plan.risks, "Критичных рисков не найдено.");
-+        renderHeat(plan);
-+        ui.jsonOutput.textContent = JSON.stringify(plan, null, 2);
-+        ui.promptOutput.value = `Pair: ${plan.pair}\nStatus: ${plan.status}\nBias: ${plan.bias}\nRegime: ${plan.market_regime}\nEntry: ${plan.entry_zone_low}-${plan.entry_zone_high}\nSL: ${plan.stop_loss}\nTP1/TP2: ${plan.tp1}/${plan.tp2}\nRR: ${plan.rr_tp1}/${plan.rr_tp2}`;
-+      }
-+
-+      function loadDemo() {
-+        const demo = { pair:"EUR/USD", regime:"pullback", d1Bias:"bullish", h4Bias:"bullish", h1Trigger:"strong", m15Trigger:"aligned", dxyTone:"contrary", newsMinutes:210, currentPrice:1.0842, entryLow:1.0828, entryHigh:1.0834, stopLoss:1.0812, takeProfit1:1.0876, takeProfit2:1.0898, zoneType:"order_block", liquiditySweep:true, sessionAligned:true, emaAligned:true };
-+        Object.entries(demo).forEach(([k,v]) => (typeof v === "boolean" ? el[k].checked = v : el[k].value = v));
-+        actionStatus.textContent = "Демо-сценарий загружен.";
-+        render();
-+      }
-+
-+      async function refreshContext() {
-+        const td = el.twelveDataKey.value.trim();
-+        const fmp = el.fmpKey.value.trim();
-+        state.live = { price: td ? "TwelveData" : "manual", calendar: fmp ? "FMP" : "manual", dxy: td ? "TwelveData" : "manual", issues: [] };
-+
-+        if (!td) state.live.issues.push("Нет TwelveData key: цены не обновлялись из API.");
-+        if (!fmp) state.live.issues.push("Нет FMP key: календарь остался ручным.");
-+
-+        if (td) {
-+          try {
-+            const symbol = pairClean(el.pair.value);
-+            const u = new URL("https://api.twelvedata.com/time_series");
-+            u.searchParams.set("symbol", symbol);
-+            u.searchParams.set("interval", "1h");
-+            u.searchParams.set("outputsize", "2");
-+            u.searchParams.set("apikey", td);
-+            const r = await fetch(u);
-+            const j = await r.json();
-+            if (!j.values || !j.values[0]) throw new Error(j.message || "нет данных");
-+            const px = Number(j.values[0].close);
-+            const step = pip(el.pair.value) * (pairClean(el.pair.value).includes("JPY") ? 70 : 18);
-+            el.currentPrice.value = px.toFixed(digits(el.pair.value));
-+            el.entryLow.value = (px - step).toFixed(digits(el.pair.value));
-+            el.entryHigh.value = (px - step / 2).toFixed(digits(el.pair.value));
-+            el.stopLoss.value = (px - step * 1.8).toFixed(digits(el.pair.value));
-+            el.takeProfit1.value = (px + step * 1.5).toFixed(digits(el.pair.value));
-+            el.takeProfit2.value = (px + step * 2.4).toFixed(digits(el.pair.value));
-+          } catch (e) {
-+            state.live.issues.push(`Ошибка TwelveData: ${e.message}`);
-+            state.live.price = "manual";
-+            state.live.dxy = "manual";
-+          }
-+        }
-+
-+        ui.priceSource.textContent = state.live.price;
-+        ui.calendarSource.textContent = state.live.calendar;
-+        ui.dxySource.textContent = state.live.dxy;
-+        ui.lastRefresh.textContent = new Date().toLocaleString("ru-RU", { hour12: false });
-+        ui.contextStatus.textContent = state.live.issues.length ? `Live-check: ${state.live.issues.join(" | ")}` : "Контекст обновлён успешно.";
-+        actionStatus.textContent = "Контекст обновлён.";
-+
-+        render();
-+      }
-+
-+      document.getElementById("loadDemo").addEventListener("click", loadDemo);
-+      document.getElementById("generatePlan").addEventListener("click", render);
-+      document.getElementById("refreshContext").addEventListener("click", refreshContext);
-+      document.getElementById("copyJson").addEventListener("click", async () => {
-+        try {
-+          await navigator.clipboard.writeText(ui.jsonOutput.textContent);
-+          const b = document.getElementById("copyJson");
-+          b.textContent = "Скопировано";
-+          setTimeout(() => (b.textContent = "Копировать JSON"), 1200);
-+        } catch {
-+          ui.contextStatus.textContent = "Clipboard недоступен в этом режиме браузера.";
-+          actionStatus.textContent = "Не удалось скопировать JSON.";
-+        }
-+      });
-+
-+      loadDemo();
-+    </script>
-   </body>
+-  </body>
++  loadDemo();
++</script>
++</body>
  </html>
  
 EOF
