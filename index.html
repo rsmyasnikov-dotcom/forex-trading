@@ -114,6 +114,7 @@
             
             <div id="gemini-key-container" style="display: none;">
                 <select id="gemini-model-select" class="api-key-input">
+                    <option value="gemini-2.0-flash">Модель: Gemini 2.0 Flash (Рекомендуемая)</option>
                     <option value="gemini-1.5-flash">Модель: Gemini 1.5 Flash (Стабильная)</option>
                     <option value="gemini-1.5-pro">Модель: Gemini 1.5 Pro (Тяжелая)</option>
                 </select>
@@ -130,7 +131,7 @@
         <div id="output-container">
             <div id="initial-screen" style="text-align: center; padding: 50px 20px; border: 1px dashed rgba(255, 255, 255, 0.07); border-radius: 14px; margin-top: 6px;">
                 <div style="font-size: 38px; opacity: 0.12; margin-bottom: 10px;">◈</div>
-                <div class="courier" style="font-size: 12px; color: #8899bb; letter-spacing: 2px; margin-bottom: 10px;">ВЫБЕРИТЕ AI И НАЖМИТЕ СКАН</div>
+                <div class="courier" style="font-size: 12px; color: #8899bb; letter-spacing: 2px; margin-bottom: 10px;">ВЫБЕРИТЕ AI И НАЖМИТЕ СКАНИРОВАТЬ</div>
             </div>
         </div>
     </main>
@@ -162,16 +163,13 @@ function buildDeepPrompt(pair) {
     const now = new Date();
     const dateStr = now.toLocaleDateString("ru-RU", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
     const timeStr = now.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Moscow" });
-    return `Ты — старший аналитик Forex. Твоя задача — выдать план по паре ${pair} для limit-входа. 
-СТРОГИЕ ПРАВИЛА:
-- Анализируй D1, H4, H1.
-- Используй: Market Structure (BOS, CHoCH), Liquidity, Order Block, FVG, Premium/Discount.
-- Вход только у OB/FVG/SR. 
-- Stop Loss за технической инвалидацией. 
-- Минимум RR: TP1 >= 2.2, TP2 >= 3.2.
-- Если сценарий неясен или новости близко (<60 мин) — верни no_trade.
-- Возвращай ТОЛЬКО JSON (на русском):
-{"context":"...","buy": {"entry_zone":"...","entry_num":0.0,"stop_loss":"...","sl_num":0.0,"sl_reasoning":"...","tp1":"...","tp1_num":0.0,"tp2":"...","tp2_num":0.0,"confidence":75,"reasoning":"..."}, "sell": {"entry_zone":"...","entry_num":0.0,"stop_loss":"...","sl_num":0.0,"sl_reasoning":"...","tp1":"...","tp1_num":0.0,"tp2":"...","tp2_num":0.0,"confidence":75,"reasoning":"..."}, "no_trade": {"reason":"...","wait_for":"..."}}
+    return `Ты — старший аналитик Forex. Твоя задача — выдать только высококачественный торговый план по паре ${pair} для limit-входа.
+РАБОЧИЙ ПРОФИЛЬ: стиль conservative day trading, 1–2 сделки в день, только Forex. Основа направления: D1/H4. Вход: H1.
+ИСПОЛЬЗУЙ АКТУАЛЬНЫЕ ДАННЫЕ (найди их сам, сейчас ${dateStr}, ${timeStr} по Москве): свежий рыночный контекст, ближайшие новости, DXY для USD-пар, текущий режим рынка.
+МЕТОД АНАЛИЗА: market structure (BOS, CHoCH), liquidity (EQL/EQH), support/resistance, order block (OB), fair value gap (FVG), premium/discount zone.
+ПРАВИЛА КАЧЕСТВА: D1/H4 задают направление, H1 решает точку входа. Вход только у OB/FVG/SR. SL за технической инвалидацией. RR >= 2.2. Нет входа за 60 мин до важных новостей. Если сценарий неясен — no_trade.
+ЗАДАЧА: Проанализируй ${pair} ПРЯМО СЕЙЧАС и верни ТОЛЬКО JSON объект (на русском):
+{"context":"Краткий вывод по ${pair} на данный момент.","buy": {"entry_zone":"1.1234-1.1200","entry_num":1.1215,"stop_loss":"1.1185","sl_num":1.1185,"sl_reasoning":"Обоснование для SL.","tp1":"1.1290","tp1_num":1.1290,"tp2":"1.1350","tp2_num":1.1350,"confidence":75,"reasoning":"Обоснование входа."}, "sell": {"entry_zone":"...","entry_num":...}, "no_trade": {"reason":"Причина отсутствия сделки.","wait_for":"Чего нужно дождаться."}}
 Если buy или sell некачественные, верни null для них. Если оба плохие — заполни no_trade.`;
 }
 
@@ -198,7 +196,9 @@ async function fetchAnalysisFromClaude(apiKey, pair) {
 
 async function fetchAnalysisFromGemini(apiKey, pair) {
     const model = document.getElementById('gemini-model-select').value;
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    // ИСПОЛЬЗУЕМ v1 вместо v1beta для максимальной стабильности
+    const url = `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`;
+    
     const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -207,17 +207,21 @@ async function fetchAnalysisFromGemini(apiKey, pair) {
             generationConfig: { response_mime_type: "application/json" }
         })
     });
+    
     if (!response.ok) {
         const err = await response.json();
-        if (response.status === 400 && err.error?.message?.includes("location")) {
+        if (response.status === 403 || (err.error && err.error.message && err.error.message.includes("location"))) {
             throw new Error("Регион не поддерживается. Включите VPN (USA) для Gemini.");
         }
         if (response.status === 429) {
-            throw new Error("Лимит запросов исчерпан (Quota). Подождите немного.");
+            throw new Error("Лимит запросов исчерпан. Подождите минуту.");
         }
         throw new Error(err.error?.message || "Ошибка Gemini");
     }
     const data = await response.json();
+    if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
+        throw new Error("Gemini вернул пустой ответ (фильтры безопасности).");
+    }
     return extractJSON(data.candidates[0].content.parts[0].text);
 }
 
@@ -229,15 +233,14 @@ function createSetupCard(data, isBuy) {
     if (!data) return '';
     const rr = (Math.abs(data.tp1_num - data.entry_num) / Math.abs(data.entry_num - data.sl_num)).toFixed(2);
     let confColor = data.confidence >= 75 ? 'var(--accent-green)' : (data.confidence >= 55 ? 'var(--accent-yellow)' : 'var(--accent-red)');
-    return `
-    <div class="result-card setup-card ${isBuy ? 'setup-card-buy' : 'setup-card-sell'}">
+    return `<div class="result-card setup-card ${isBuy ? 'setup-card-buy' : 'setup-card-sell'}">
         <div class="setup-header">
             <div class="setup-title courier ${isBuy ? 'setup-title-buy' : 'setup-title-sell'}">${isBuy ? '▲ BUY LIMIT' : '▼ SELL LIMIT'}</div>
             <div class="setup-pills courier"><div class="pill pill-confidence" style="border-color:${confColor}; color:${confColor};">${data.confidence}%</div><div class="pill pill-rr">R:R ${rr}</div></div>
         </div>
         <div class="setup-grid courier">
             <div class="grid-item"><div class="label">ВХОД (ЗОНА)</div><div class="value" style="color: var(--accent-yellow);">${data.entry_zone}</div></div>
-            <div class="grid-item"><div classLocation="label">СТОП ЛОСС</div><div class="value" style="color: var(--accent-red);">${data.stop_loss}</div></div>
+            <div class="grid-item"><div class="label">СТОП ЛОСС</div><div class="value" style="color: var(--accent-red);">${data.stop_loss}</div></div>
             <div class="grid-item"><div class="label">ТЕЙК ПРОФИТ 1</div><div class="value" style="color: var(--accent-green);">${data.tp1}</div></div>
             ${data.tp2 ? `<div class="grid-item"><div class="label">ТЕЙК ПРОФИТ 2</div><div class="value" style="color: #55ffcc;">${data.tp2}</div></div>` : ''}
         </div>
@@ -350,5 +353,6 @@ document.addEventListener("DOMContentLoaded", () => {
     init();
 });
 </script>
+
 </body>
 </html>
