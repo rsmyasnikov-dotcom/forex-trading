@@ -1,8 +1,8 @@
 diff --git a/index.html b/index.html
-index 88106aac8f66cfcbba94c326b2372070a865c68b..9a0675551a338c45511749b09948c68f0cee3fb3 100644
+index 88106aac8f66cfcbba94c326b2372070a865c68b..df83ccc0ccebc2bd330df3f96d846a4379482592 100644
 --- a/index.html
 +++ b/index.html
-@@ -1,74 +1,74 @@
+@@ -1,74 +1,463 @@
  <!doctype html>
  <html lang="ru">
    <head>
@@ -10,7 +10,397 @@ index 88106aac8f66cfcbba94c326b2372070a865c68b..9a0675551a338c45511749b09948c68f
      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
      <meta name="theme-color" content="#0b1020" />
      <title>FX Limit Planner Pro</title>
-     <link rel="stylesheet" href="styles.css" />
+-    <link rel="stylesheet" href="styles.css" />
++    <style>
++:root {
++  color-scheme: dark;
++  --bg: #08101f;
++  --panel: #111b31;
++  --panel-2: #17233d;
++  --accent: #79f7c6;
++  --accent-2: #7aa2ff;
++  --danger: #ff7a90;
++  --warning: #ffc66d;
++  --text: #ecf1ff;
++  --muted: #97a4c4;
++  --border: rgba(151, 164, 196, 0.18);
++  --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
++}
++
++* {
++  box-sizing: border-box;
++}
++
++body {
++  margin: 0;
++  min-height: 100vh;
++  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
++  background:
++    radial-gradient(circle at top, rgba(122, 162, 255, 0.18), transparent 34%),
++    linear-gradient(180deg, #060b16, var(--bg));
++  color: var(--text);
++}
++
++button,
++input,
++select,
++textarea {
++  font: inherit;
++}
++
++.app-shell {
++  width: min(1180px, calc(100% - 24px));
++  margin: 0 auto;
++  padding: 20px 0 40px;
++}
++
++.panel {
++  background: linear-gradient(180deg, rgba(23, 35, 61, 0.95), rgba(14, 23, 42, 0.95));
++  border: 1px solid var(--border);
++  border-radius: 24px;
++  box-shadow: var(--shadow);
++  padding: 20px;
++  backdrop-filter: blur(12px);
++}
++
++.hero {
++  display: flex;
++  justify-content: space-between;
++  gap: 20px;
++  align-items: flex-start;
++  margin-bottom: 18px;
++}
++
++.eyebrow,
++.panel-kicker {
++  margin: 0 0 8px;
++  color: var(--accent);
++  text-transform: uppercase;
++  letter-spacing: 0.18em;
++  font-size: 0.72rem;
++}
++
++.hero h1,
++.panel h2,
++.panel h3 {
++  margin: 0;
++}
++
++.hero-copy,
++.subdued,
++#planNarrative {
++  color: var(--muted);
++  line-height: 1.55;
++}
++
++.hero-badges {
++  display: flex;
++  flex-wrap: wrap;
++  gap: 10px;
++  justify-content: flex-end;
++}
++
++.hero-badges span,
++.status-badge,
++.toggle-pill,
++.ghost-button,
++.primary-button {
++  border-radius: 999px;
++}
++
++.hero-badges span,
++.toggle-pill {
++  padding: 10px 14px;
++  border: 1px solid var(--border);
++  background: rgba(121, 247, 198, 0.08);
++}
++
++.grid-layout {
++  display: grid;
++  grid-template-columns: repeat(12, 1fr);
++  gap: 18px;
++}
++
++.controls-panel,
++.summary-panel {
++  grid-column: span 6;
++}
++
++.heatmap-panel,
++.output-panel,
++.sources-panel {
++  grid-column: span 4;
++}
++
++.panel-title-row {
++  display: flex;
++  justify-content: space-between;
++  gap: 12px;
++  align-items: center;
++  margin-bottom: 18px;
++}
++
++.field-grid {
++  display: grid;
++  grid-template-columns: repeat(2, minmax(0, 1fr));
++  gap: 14px;
++}
++
++.field-grid.one-col {
++  grid-template-columns: 1fr;
++}
++
++label {
++  display: flex;
++  flex-direction: column;
++  gap: 8px;
++  color: var(--muted);
++  font-size: 0.92rem;
++}
++
++input,
++select,
++textarea {
++  width: 100%;
++  border: 1px solid var(--border);
++  border-radius: 16px;
++  background: rgba(8, 16, 31, 0.78);
++  color: var(--text);
++  padding: 12px 14px;
++}
++
++textarea {
++  resize: vertical;
++  min-height: 220px;
++}
++
++.toggle-row {
++  display: flex;
++  flex-wrap: wrap;
++  gap: 10px;
++  margin: 18px 0 20px;
++}
++
++.toggle-pill {
++  display: inline-flex;
++  align-items: center;
++  gap: 10px;
++  cursor: pointer;
++  color: var(--text);
++}
++
++.toggle-pill input {
++  width: auto;
++  margin: 0;
++}
++
++.action-row {
++  display: grid;
++  grid-template-columns: 1fr 1fr;
++  gap: 10px;
++}
++
++.primary-button,
++.ghost-button {
++  border: 0;
++  cursor: pointer;
++  padding: 12px 16px;
++  color: var(--text);
++}
++
++.primary-button {
++  width: 100%;
++  background: linear-gradient(135deg, var(--accent), #59c8ff);
++  color: #03111a;
++  font-weight: 700;
++}
++
++.ghost-button {
++  background: rgba(122, 162, 255, 0.14);
++  border: 1px solid var(--border);
++}
++
++.status-badge {
++  padding: 10px 14px;
++  font-size: 0.8rem;
++  font-weight: 700;
++  letter-spacing: 0.08em;
++}
++
++.status-badge.neutral {
++  background: rgba(122, 162, 255, 0.16);
++}
++
++.status-badge.buy {
++  background: rgba(121, 247, 198, 0.18);
++  color: var(--accent);
++}
++
++.status-badge.sell {
++  background: rgba(255, 122, 144, 0.18);
++  color: var(--danger);
++}
++
++.status-badge.blocked {
++  background: rgba(255, 198, 109, 0.18);
++  color: var(--warning);
++}
++
++.score-strip,
++.trade-levels,
++.reason-layout {
++  display: grid;
++  gap: 12px;
++}
++
++.score-strip {
++  grid-template-columns: repeat(3, minmax(0, 1fr));
++  margin-bottom: 18px;
++}
++
++.score-strip article,
++.trade-levels > div,
++.plan-card,
++.context-grid article {
++  background: rgba(8, 16, 31, 0.58);
++  border: 1px solid var(--border);
++  border-radius: 18px;
++}
++
++.score-strip article,
++.trade-levels > div,
++.context-grid article {
++  padding: 14px;
++}
++
++.score-strip span,
++.trade-levels span,
++.context-grid span {
++  display: block;
++  color: var(--muted);
++  margin-bottom: 6px;
++}
++
++.plan-card {
++  padding: 18px;
++  margin-bottom: 18px;
++}
++
++.trade-levels {
++  grid-template-columns: repeat(2, minmax(0, 1fr));
++  margin-top: 18px;
++}
++
++.reason-layout {
++  grid-template-columns: repeat(2, minmax(0, 1fr));
++}
++
++.reason-layout article {
++  background: rgba(8, 16, 31, 0.58);
++  border-radius: 18px;
++  padding: 16px;
++  border: 1px solid var(--border);
++}
++
++.reason-list {
++  margin: 12px 0 0;
++  padding-left: 18px;
++  color: var(--muted);
++  line-height: 1.55;
++}
++
++.heatmap {
++  display: grid;
++  grid-template-columns: repeat(5, minmax(0, 1fr));
++  gap: 10px;
++  margin-bottom: 14px;
++}
++
++.heatmap-tile {
++  min-height: 88px;
++  border-radius: 18px;
++  border: 1px solid var(--border);
++  padding: 12px;
++  display: flex;
++  flex-direction: column;
++  justify-content: space-between;
++  background: rgba(8, 16, 31, 0.58);
++}
++
++.heatmap-tile strong {
++  font-size: 1.1rem;
++}
++
++.heatmap-tile.good {
++  outline: 1px solid rgba(121, 247, 198, 0.35);
++}
++
++.heatmap-tile.warn {
++  outline: 1px solid rgba(255, 198, 109, 0.35);
++}
++
++.heatmap-tile.bad {
++  outline: 1px solid rgba(255, 122, 144, 0.35);
++}
++
++.context-grid {
++  display: grid;
++  grid-template-columns: repeat(2, minmax(0, 1fr));
++  gap: 10px;
++  margin: 14px 0;
++}
++
++.json-output {
++  background: rgba(8, 16, 31, 0.72);
++  border: 1px solid var(--border);
++  border-radius: 18px;
++  padding: 16px;
++  overflow: auto;
++  min-height: 240px;
++}
++
++.prompt-output {
++  margin-top: 14px;
++}
++
++@media (max-width: 960px) {
++  .controls-panel,
++  .summary-panel,
++  .heatmap-panel,
++  .output-panel,
++  .sources-panel {
++    grid-column: 1 / -1;
++  }
++
++  .hero,
++  .panel-title-row {
++    flex-direction: column;
++  }
++}
++
++@media (max-width: 640px) {
++  .app-shell {
++    width: min(100% - 16px, 100%);
++    padding-top: 14px;
++  }
++
++  .panel {
++    padding: 16px;
++    border-radius: 22px;
++  }
++
++  .field-grid,
++  .reason-layout,
++  .trade-levels,
++  .score-strip,
++  .heatmap,
++  .context-grid,
++  .action-row {
++    grid-template-columns: 1fr;
++  }
++}
++
++</style>
    </head>
    <body>
      <div class="app-shell">
@@ -86,7 +476,7 @@ index 88106aac8f66cfcbba94c326b2372070a865c68b..9a0675551a338c45511749b09948c68f
                <select id="h4Bias">
                  <option value="bullish">Bullish</option>
                  <option value="bearish">Bearish</option>
-@@ -131,137 +131,165 @@
+@@ -131,137 +520,771 @@
                Сильная зона value
                <select id="zoneType">
                  <option value="order_block">Order block</option>
@@ -263,6 +653,613 @@ index 88106aac8f66cfcbba94c326b2372070a865c68b..9a0675551a338c45511749b09948c68f
        </main>
      </div>
  
-     <script src="app.js"></script>
+-    <script src="app.js"></script>
++    <script>
++const ids = [
++  "pair",
++  "regime",
++  "d1Bias",
++  "h4Bias",
++  "h1Trigger",
++  "m15Trigger",
++  "dxyTone",
++  "newsMinutes",
++  "currentPrice",
++  "entryLow",
++  "entryHigh",
++  "stopLoss",
++  "takeProfit1",
++  "takeProfit2",
++  "zoneType",
++  "liquiditySweep",
++  "sessionAligned",
++  "emaAligned",
++  "twelveDataKey",
++  "fmpKey"
++];
++
++const elements = Object.fromEntries(ids.map((id) => [id, document.getElementById(id)]));
++const statusBadge = document.getElementById("statusBadge");
++const setupScore = document.getElementById("setupScore");
++const confidenceLabel = document.getElementById("confidenceLabel");
++const newsRiskLabel = document.getElementById("newsRiskLabel");
++const planHeadline = document.getElementById("planHeadline");
++const planNarrative = document.getElementById("planNarrative");
++const entryDisplay = document.getElementById("entryDisplay");
++const stopDisplay = document.getElementById("stopDisplay");
++const tp1Display = document.getElementById("tp1Display");
++const tp2Display = document.getElementById("tp2Display");
++const bullReasons = document.getElementById("bullReasons");
++const riskReasons = document.getElementById("riskReasons");
++const heatmap = document.getElementById("heatmap");
++const jsonOutput = document.getElementById("jsonOutput");
++const promptOutput = document.getElementById("promptOutput");
++const contextStatus = document.getElementById("contextStatus");
++const priceSource = document.getElementById("priceSource");
++const calendarSource = document.getElementById("calendarSource");
++const dxySource = document.getElementById("dxySource");
++const lastRefresh = document.getElementById("lastRefresh");
++
++const state = {
++  live: {
++    candles: null,
++    structure: null,
++    dxyChange: null,
++    minutesToHighImpact: null,
++    sources: {
++      price: "manual",
++      calendar: "manual",
++      dxy: "manual"
++    },
++    fetchedAt: null,
++    issues: []
++  }
++};
++
++function sanitizePair(pair) {
++  return pair.replace("/", "");
++}
++
++function precisionForPair(pair) {
++  return sanitizePair(pair).includes("JPY") ? 0.01 : 0.0001;
++}
++
++function formatPrice(pair, value) {
++  const digits = sanitizePair(pair).includes("JPY") ? 3 : 4;
++  return Number(value).toFixed(digits);
++}
++
++function getFormState() {
++  return {
++    pair: elements.pair.value,
++    regime: elements.regime.value,
++    d1Bias: elements.d1Bias.value,
++    h4Bias: elements.h4Bias.value,
++    h1Trigger: elements.h1Trigger.value,
++    m15Trigger: elements.m15Trigger.value,
++    dxyTone: elements.dxyTone.value,
++    newsMinutes: Number(elements.newsMinutes.value),
++    currentPrice: Number(elements.currentPrice.value),
++    entryLow: Number(elements.entryLow.value),
++    entryHigh: Number(elements.entryHigh.value),
++    stopLoss: Number(elements.stopLoss.value),
++    takeProfit1: Number(elements.takeProfit1.value),
++    takeProfit2: Number(elements.takeProfit2.value),
++    zoneType: elements.zoneType.value,
++    liquiditySweep: elements.liquiditySweep.checked,
++    sessionAligned: elements.sessionAligned.checked,
++    emaAligned: elements.emaAligned.checked
++  };
++}
++
++function ema(values, length) {
++  if (!values.length) return null;
++  const multiplier = 2 / (length + 1);
++  return values.reduce((acc, value, index) => {
++    if (index === 0) return value;
++    return value * multiplier + acc * (1 - multiplier);
++  }, values[0]);
++}
++
++function detectBias(candles) {
++  if (!candles || candles.length < 8) return "neutral";
++  const closes = candles.map((row) => row.close);
++  const emaFast = ema(closes.slice(-20), 9);
++  const emaSlow = ema(closes.slice(-50), 21);
++  const latest = closes[closes.length - 1];
++  const prev = closes[closes.length - 4] ?? closes[0];
++
++  if (latest > prev && emaFast > emaSlow) return "bullish";
++  if (latest < prev && emaFast < emaSlow) return "bearish";
++  return "neutral";
++}
++
++function detectTrigger(candles) {
++  if (!candles || candles.length < 10) return "weak";
++  const recent = candles.slice(-6);
++  const bodyStrength = recent.filter((c) => Math.abs(c.close - c.open) > (c.high - c.low) * 0.45).length;
++  if (bodyStrength >= 4) return "strong";
++  if (bodyStrength >= 2) return "mixed";
++  return "weak";
++}
++
++function deriveDxyTone(pair, dxyChange) {
++  if (!pair.includes("USD") || dxyChange === null) return "neutral";
++  const usdIsBase = pair.startsWith("USD/");
++  if (dxyChange > 0.12) return usdIsBase ? "supportive" : "contrary";
++  if (dxyChange < -0.12) return usdIsBase ? "contrary" : "supportive";
++  return "neutral";
++}
++
++function deriveRegime(candles) {
++  if (!candles || candles.length < 20) return "range";
++  const tail = candles.slice(-20);
++  const highs = tail.map((x) => x.high);
++  const lows = tail.map((x) => x.low);
++  const closes = tail.map((x) => x.close);
++
++  const range = Math.max(...highs) - Math.min(...lows);
++  const move = Math.abs(closes[closes.length - 1] - closes[0]);
++  const efficiency = move / Math.max(range, 0.00001);
++
++  if (efficiency > 0.72 && range > 0.004) return "trend";
++  if (efficiency > 0.5) return "pullback";
++  if (range < 0.0022) return "compression";
++  return "range";
++}
++
++function normalizeCandle(item) {
++  return {
++    datetime: item.datetime,
++    open: Number(item.open),
++    high: Number(item.high),
++    low: Number(item.low),
++    close: Number(item.close)
++  };
++}
++
++async function fetchTwelveSeries(symbol, interval, apiKey) {
++  const url = new URL("https://api.twelvedata.com/time_series");
++  url.searchParams.set("symbol", symbol);
++  url.searchParams.set("interval", interval);
++  url.searchParams.set("outputsize", "120");
++  url.searchParams.set("apikey", apiKey);
++  const response = await fetch(url);
++  const payload = await response.json();
++
++  if (!payload.values || !Array.isArray(payload.values)) {
++    throw new Error(payload.message || `No candles for ${interval}`);
++  }
++
++  return payload.values.map(normalizeCandle).reverse();
++}
++
++async function fetchEconomicCalendar(apiKey) {
++  const now = new Date();
++  const from = new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString().slice(0, 10);
++  const to = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
++  const url = new URL("https://financialmodelingprep.com/stable/economic-calendar");
++  url.searchParams.set("from", from);
++  url.searchParams.set("to", to);
++  url.searchParams.set("apikey", apiKey);
++
++  const response = await fetch(url);
++  const payload = await response.json();
++  if (!Array.isArray(payload)) {
++    throw new Error("Economic calendar is unavailable");
++  }
++
++  const highItems = payload.filter((item) => {
++    const level = String(item.impact || item.importance || "").toLowerCase();
++    return level.includes("high") || level.includes("3");
++  });
++
++  let bestMinutes = null;
++  highItems.forEach((item) => {
++    if (!item.date) return;
++    const eventTime = new Date(item.date).getTime();
++    const delta = Math.round((eventTime - Date.now()) / 60000);
++    if (delta >= 0 && (bestMinutes === null || delta < bestMinutes)) {
++      bestMinutes = delta;
++    }
++  });
++
++  return bestMinutes;
++}
++
++function applyLiveInsights() {
++  const live = state.live;
++  if (live.structure) {
++    elements.d1Bias.value = live.structure.d1Bias;
++    elements.h4Bias.value = live.structure.h4Bias;
++    elements.h1Trigger.value = live.structure.h1Trigger;
++    elements.m15Trigger.value = live.structure.m15Trigger;
++    elements.regime.value = live.structure.regime;
++  }
++
++  if (live.candles?.H1?.length) {
++    const latest = live.candles.H1[live.candles.H1.length - 1].close;
++    const span = precisionForPair(elements.pair.value) * (sanitizePair(elements.pair.value).includes("JPY") ? 70 : 18);
++
++    elements.currentPrice.value = latest.toFixed(sanitizePair(elements.pair.value).includes("JPY") ? 3 : 4);
++    elements.entryLow.value = (latest - span).toFixed(sanitizePair(elements.pair.value).includes("JPY") ? 3 : 4);
++    elements.entryHigh.value = (latest - span / 2).toFixed(sanitizePair(elements.pair.value).includes("JPY") ? 3 : 4);
++    elements.stopLoss.value = (latest - span * 1.8).toFixed(sanitizePair(elements.pair.value).includes("JPY") ? 3 : 4);
++    elements.takeProfit1.value = (latest + span * 1.5).toFixed(sanitizePair(elements.pair.value).includes("JPY") ? 3 : 4);
++    elements.takeProfit2.value = (latest + span * 2.4).toFixed(sanitizePair(elements.pair.value).includes("JPY") ? 3 : 4);
++  }
++
++  if (typeof live.dxyChange === "number") {
++    elements.dxyTone.value = deriveDxyTone(elements.pair.value, live.dxyChange);
++  }
++
++  if (typeof live.minutesToHighImpact === "number") {
++    elements.newsMinutes.value = live.minutesToHighImpact;
++  }
++
++  priceSource.textContent = live.sources.price;
++  calendarSource.textContent = live.sources.calendar;
++  dxySource.textContent = live.sources.dxy;
++  lastRefresh.textContent = live.fetchedAt || "—";
++  contextStatus.textContent = live.issues.length
++    ? `Live-check: ${live.issues.join(" | ")}`
++    : "Live-check завершён: структура и риск обновлены автоматически.";
++}
++
++async function refreshLiveContext() {
++  const apiKey = elements.twelveDataKey.value.trim();
++  const fmpKey = elements.fmpKey.value.trim();
++  const pair = sanitizePair(elements.pair.value);
++
++  state.live = {
++    candles: null,
++    structure: null,
++    dxyChange: null,
++    minutesToHighImpact: null,
++    sources: {
++      price: "manual",
++      calendar: "manual",
++      dxy: "manual"
++    },
++    fetchedAt: null,
++    issues: []
++  };
++
++  if (!apiKey) {
++    state.live.issues.push("Нет TwelveData API key: цены/структура остались ручными.");
++  } else {
++    try {
++      const [D1, H4, H1, M15] = await Promise.all([
++        fetchTwelveSeries(pair, "1day", apiKey),
++        fetchTwelveSeries(pair, "4h", apiKey),
++        fetchTwelveSeries(pair, "1h", apiKey),
++        fetchTwelveSeries(pair, "15min", apiKey)
++      ]);
++
++      const dxyCandles = await fetchTwelveSeries("DXY", "1h", apiKey);
++      const dxyPrev = dxyCandles[dxyCandles.length - 2]?.close;
++      const dxyLast = dxyCandles[dxyCandles.length - 1]?.close;
++      const dxyChange = dxyPrev ? ((dxyLast - dxyPrev) / dxyPrev) * 100 : 0;
++
++      state.live.candles = { D1, H4, H1, M15 };
++      state.live.structure = {
++        d1Bias: detectBias(D1),
++        h4Bias: detectBias(H4),
++        h1Trigger: detectTrigger(H1),
++        m15Trigger: detectTrigger(M15) === "weak" ? "optional" : "aligned",
++        regime: deriveRegime(H4)
++      };
++      state.live.dxyChange = dxyChange;
++      state.live.sources.price = "TwelveData";
++      state.live.sources.dxy = "TwelveData";
++    } catch (error) {
++      state.live.issues.push(`Ошибка котировок: ${error.message}`);
++    }
++  }
++
++  if (!fmpKey) {
++    state.live.issues.push("Нет FMP API key: news-lock остался ручным.");
++  } else {
++    try {
++      state.live.minutesToHighImpact = await fetchEconomicCalendar(fmpKey);
++      state.live.sources.calendar = "FMP Economic Calendar";
++      if (state.live.minutesToHighImpact === null) {
++        state.live.issues.push("High-impact событий в окне 24ч не найдено.");
++      }
++    } catch (error) {
++      state.live.issues.push(`Ошибка календаря: ${error.message}`);
++    }
++  }
++
++  state.live.fetchedAt = new Date().toLocaleString("ru-RU", { hour12: false });
++  applyLiveInsights();
++  renderPlan();
++}
++
++function calculatePlan(input) {
++  const midpoint = (input.entryLow + input.entryHigh) / 2;
++  const buyRisk = Math.max(midpoint - input.stopLoss, precisionForPair(input.pair));
++  const sellRisk = Math.max(input.stopLoss - midpoint, precisionForPair(input.pair));
++  const buyRr1 = (input.takeProfit1 - midpoint) / buyRisk;
++  const buyRr2 = (input.takeProfit2 - midpoint) / buyRisk;
++  const sellRr1 = (midpoint - input.takeProfit1) / sellRisk;
++  const sellRr2 = (midpoint - input.takeProfit2) / sellRisk;
++
++  let score = 45;
++  const positives = [];
++  const risks = [];
++  let direction = "no_trade";
++
++  if (input.d1Bias === input.h4Bias && input.d1Bias !== "neutral") {
++    score += 20;
++    direction = input.d1Bias === "bullish" ? "buy_limit" : "sell_limit";
++    positives.push(`D1 и H4 совпадают: ${input.d1Bias}.`);
++  } else {
++    score -= 25;
++    risks.push("Старшие ТФ не дают единый directional bias.");
++  }
++
++  if (input.h1Trigger === "strong") {
++    score += 14;
++    positives.push("H1 даёт сильный trigger у value-зоны.");
++  } else if (input.h1Trigger === "mixed") {
++    score += 3;
++    risks.push("H1 подтверждает идею только частично.");
++  } else {
++    score -= 16;
++    risks.push("H1 trigger слабый.");
++  }
++
++  if (input.m15Trigger === "aligned") {
++    score += 7;
++    positives.push("M15 синхронизирован и помогает таймингу.");
++  } else if (input.m15Trigger === "conflict") {
++    score -= 12;
++    risks.push("M15 конфликтует с H1/H4/D1.");
++  }
++
++  if (input.newsMinutes < 60) {
++    score -= 35;
++    risks.push("До high-impact news < 60 минут. Вход блокируется.");
++  } else if (input.newsMinutes < 180) {
++    score -= 8;
++    risks.push("Новости близко, нужен жёсткий риск-контроль.");
++  } else {
++    positives.push("Новостное окно достаточно далеко.");
++  }
++
++  if (input.dxyTone === "supportive") {
++    score += 8;
++    positives.push("DXY/USD фон поддерживает сценарий.");
++  } else if (input.dxyTone === "contrary") {
++    score -= 10;
++    risks.push("DXY/USD фон против позиции.");
++  }
++
++  if (["trend", "pullback"].includes(input.regime)) {
++    score += 8;
++    positives.push(`Режим ${input.regime} подходит для conservative entry.`);
++  } else if (input.regime === "compression") {
++    score -= 12;
++    risks.push("Compression повышает вероятность ложных импульсов.");
++  } else if (input.regime === "expansion") {
++    score -= 10;
++    risks.push("Expansion может не дать аккуратного ретеста.");
++  }
++
++  if (input.zoneType === "order_block" || input.zoneType === "liquidity_retest") {
++    score += 8;
++    positives.push("Entry стоит у сильной зоны стоимости (OB/liquidity retest).");
++  } else {
++    score += 3;
++  }
++
++  if (input.liquiditySweep) {
++    score += 5;
++    positives.push("Liquidity sweep подтверждает возврат к value зоне.");
++  } else {
++    risks.push("Нет sweep ликвидности.");
++  }
++
++  if (input.sessionAligned) {
++    score += 4;
++  } else {
++    score -= 5;
++    risks.push("Session high/low не подтверждают идею.");
++  }
++
++  if (input.emaAligned) {
++    score += 3;
++  } else {
++    score -= 4;
++    risks.push("EMA фильтр против направления.");
++  }
++
++  const rr1 = direction === "sell_limit" ? sellRr1 : buyRr1;
++  const rr2 = direction === "sell_limit" ? sellRr2 : buyRr2;
++
++  if (rr1 >= 2.2 && rr2 >= 3.2) {
++    score += 10;
++    positives.push(`RR ок: TP1 ${rr1.toFixed(2)}, TP2 ${rr2.toFixed(2)}.`);
++  } else {
++    score -= 20;
++    risks.push("RR ниже требований (TP1 >= 2.2, TP2 >= 3.2). ");
++  }
++
++  const liveDataWeak = state.live.sources.price === "manual" && state.live.sources.calendar === "manual";
++  if (liveDataWeak) {
++    score -= 8;
++    risks.push("Live-подтверждения не получены, точность снижена.");
++  }
++
++  if (input.entryLow > input.entryHigh) {
++    score = 0;
++    direction = "no_trade";
++    risks.push("Entry zone low больше, чем entry zone high.");
++  }
++
++  const finalScore = Math.max(0, Math.min(100, Math.round(score)));
++  const confidence = finalScore >= 78 ? "high" : finalScore >= 62 ? "medium" : "low";
++  const newsRisk = input.newsMinutes < 60 ? "high" : input.newsMinutes < 180 ? "medium" : "low";
++
++  if (
++    input.newsMinutes < 60 ||
++    finalScore < 62 ||
++    direction === "no_trade" ||
++    rr1 < 2.2 ||
++    rr2 < 3.2 ||
++    (confidence !== "high" && liveDataWeak)
++  ) {
++    direction = "no_trade";
++  }
++
++  const narrative = {
++    buy_limit: `Buy limit в зоне ${formatPrice(input.pair, input.entryLow)}-${formatPrice(input.pair, input.entryHigh)} возможен только при сохранении структуры и отсутствии high-impact новостей перед входом.`,
++    sell_limit: `Sell limit в зоне ${formatPrice(input.pair, input.entryLow)}-${formatPrice(input.pair, input.entryHigh)} допустим при реакции от premium/value area с инвалидизацией за техническим экстремумом.`,
++    no_trade: "Качество сетапа недостаточно: лучше сохранить капитал и ждать более чистый сценарий."
++  };
++
++  return {
++    pair: sanitizePair(input.pair),
++    status: direction,
++    bias: input.d1Bias === input.h4Bias ? input.d1Bias : "neutral",
++    market_regime: input.regime,
++    entry_type: direction,
++    entry_zone_low: Number(formatPrice(input.pair, input.entryLow)),
++    entry_zone_high: Number(formatPrice(input.pair, input.entryHigh)),
++    ideal_entry: Number(formatPrice(input.pair, midpoint)),
++    stop_loss: Number(formatPrice(input.pair, input.stopLoss)),
++    tp1: Number(formatPrice(input.pair, input.takeProfit1)),
++    tp2: Number(formatPrice(input.pair, input.takeProfit2)),
++    rr_tp1: Number(rr1.toFixed(2)),
++    rr_tp2: Number(rr2.toFixed(2)),
++    confidence,
++    news_risk: newsRisk,
++    setup_score: finalScore,
++    invalidate_before_minutes: 60,
++    narrative: narrative[direction],
++    headline: direction === "buy_limit" ? "Buy limit приоритетен" : direction === "sell_limit" ? "Sell limit приоритетен" : "No trade — ждать более чистую структуру",
++    reasoning: positives,
++    risks,
++    live_sources: state.live.sources,
++    no_trade_reason: direction === "no_trade" ? risks[0] || "Недостаточно подтверждений." : null
++  };
++}
++
++function renderReasons(listElement, items) {
++  listElement.innerHTML = "";
++  items.forEach((item) => {
++    const li = document.createElement("li");
++    li.textContent = item;
++    listElement.appendChild(li);
++  });
++}
++
++function renderHeatmap(plan) {
++  const tiles = [
++    { label: "Structure", value: plan.bias === "neutral" ? "Mixed" : plan.bias, score: plan.bias === "neutral" ? 1 : 3 },
++    { label: "Regime", value: plan.market_regime, score: ["trend", "pullback"].includes(plan.market_regime) ? 3 : 1 },
++    { label: "News lock", value: plan.news_risk, score: plan.news_risk === "low" ? 3 : plan.news_risk === "medium" ? 2 : 1 },
++    { label: "RR", value: `${plan.rr_tp1} / ${plan.rr_tp2}`, score: plan.rr_tp1 >= 2.2 && plan.rr_tp2 >= 3.2 ? 3 : 1 },
++    { label: "Decision", value: plan.status, score: plan.status === "no_trade" ? 1 : 3 }
++  ];
++
++  heatmap.innerHTML = "";
++  tiles.forEach((tile) => {
++    const article = document.createElement("article");
++    article.className = `heatmap-tile ${tile.score === 3 ? "good" : tile.score === 2 ? "warn" : "bad"}`;
++    article.innerHTML = `<span>${tile.label}</span><strong>${tile.value}</strong>`;
++    heatmap.appendChild(article);
++  });
++}
++
++function buildPrompt(plan) {
++  return [
++    `Pair: ${plan.pair}`,
++    `Status: ${plan.status}`,
++    `Bias: ${plan.bias}`,
++    `Regime: ${plan.market_regime}`,
++    `Entry: ${plan.entry_zone_low} - ${plan.entry_zone_high}`,
++    `Stop: ${plan.stop_loss}; TP1: ${plan.tp1}; TP2: ${plan.tp2}`,
++    `RR: ${plan.rr_tp1} / ${plan.rr_tp2}`,
++    `Confidence: ${plan.confidence}; News risk: ${plan.news_risk}`,
++    `Why: ${plan.reasoning.join(" ")}`,
++    `Risk: ${plan.risks.join(" ")}`
++  ].join("\n");
++}
++
++function renderPlan() {
++  const plan = calculatePlan(getFormState());
++  const statusClass = plan.status === "buy_limit" ? "buy" : plan.status === "sell_limit" ? "sell" : "blocked";
++  statusBadge.className = `status-badge ${statusClass}`;
++  statusBadge.textContent = plan.status.toUpperCase();
++  setupScore.textContent = `${plan.setup_score} / 100`;
++  confidenceLabel.textContent = plan.confidence.toUpperCase();
++  newsRiskLabel.textContent = plan.news_risk.toUpperCase();
++  planHeadline.textContent = plan.headline;
++  planNarrative.textContent = plan.narrative;
++  entryDisplay.textContent = `${plan.entry_zone_low} - ${plan.entry_zone_high}`;
++  stopDisplay.textContent = `${plan.stop_loss}`;
++  tp1Display.textContent = `${plan.tp1} / ${plan.rr_tp1}`;
++  tp2Display.textContent = `${plan.tp2} / ${plan.rr_tp2}`;
++
++  renderReasons(bullReasons, plan.reasoning.length ? plan.reasoning : ["Недостаточно подтверждений."]);
++  renderReasons(riskReasons, plan.risks.length ? plan.risks : ["Критичных рисков не найдено."]);
++  renderHeatmap(plan);
++  jsonOutput.textContent = JSON.stringify(plan, null, 2);
++  promptOutput.value = buildPrompt(plan);
++}
++
++function loadDemoScenario() {
++  const demo = {
++    pair: "EUR/USD",
++    regime: "pullback",
++    d1Bias: "bullish",
++    h4Bias: "bullish",
++    h1Trigger: "strong",
++    m15Trigger: "aligned",
++    dxyTone: "contrary",
++    newsMinutes: 210,
++    currentPrice: 1.0842,
++    entryLow: 1.0828,
++    entryHigh: 1.0834,
++    stopLoss: 1.0812,
++    takeProfit1: 1.0876,
++    takeProfit2: 1.0898,
++    zoneType: "order_block",
++    liquiditySweep: true,
++    sessionAligned: true,
++    emaAligned: true
++  };
++
++  Object.entries(demo).forEach(([key, value]) => {
++    if (typeof value === "boolean") {
++      elements[key].checked = value;
++    } else {
++      elements[key].value = value;
++    }
++  });
++
++  renderPlan();
++}
++
++document.getElementById("generatePlan").addEventListener("click", renderPlan);
++document.getElementById("loadDemo").addEventListener("click", loadDemoScenario);
++document.getElementById("refreshContext").addEventListener("click", refreshLiveContext);
++document.getElementById("copyJson").addEventListener("click", async () => {
++  try {
++    await navigator.clipboard.writeText(jsonOutput.textContent);
++    document.getElementById("copyJson").textContent = "Скопировано";
++    setTimeout(() => {
++      document.getElementById("copyJson").textContent = "Копировать JSON";
++    }, 1500);
++  } catch (error) {
++    document.getElementById("copyJson").textContent = "Clipboard недоступен";
++  }
++});
++
++loadDemoScenario();
++
++</script>
    </body>
  </html>
