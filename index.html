@@ -1,380 +1,258 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content-width=device-width, initial-scale=1.0">
-    <title>FX Math Scanner Pro | Algorithmic Engine</title>
-    <style>
-        :root {
-            --bg-main: #060c14; --bg-card: rgba(12, 18, 28, 0.9);
-            --bg-card-light: rgba(17, 29, 42, 0.9); --border-color: rgba(100, 160, 220, 0.18);
-            --text-primary: #ccdde8; --text-secondary: #aabbdd; --accent-green: #22cc88;
-            --accent-red: #ff5566; --accent-yellow: #e8c94a; --accent-blue: #7fb3e0;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-main);
-            background-image: radial-gradient(ellipse at 15% 0%, rgba(0, 50, 100, 0.35) 0%, transparent 55%), radial-gradient(ellipse at 85% 100%, rgba(0, 20, 50, 0.25) 0%, transparent 55%);
-            color: var(--text-primary); margin: 0; padding-bottom: 110px;
-        }
-        .container { max-width: 600px; margin: 0 auto; padding: 12px; }
-        .courier { font-family: 'Courier New', Courier, monospace; }
-        .header {
-            position: sticky; top: 0; z-index: 100; background: rgba(6, 12, 20, 0.95);
-            backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color); padding: 10px 14px;
-        }
-        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .logo { display: flex; align-items: center; gap: 8px; }
-        .logo .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent-blue); box-shadow: 0 0 8px var deaccent-blue; animation: pulse 2s infinite; }
-        .logo-title { font-size: 13px; color: #eef5ff; letter-spacing: 2px; font-weight: 700; }
-        .logo-subtitle { font-size: 8px; color: #bbddee; letter-spacing: 2px; }
-        .time-info { text-align: right; }
-        .clock { font-size: 13px; color: #eef5ff; font-weight: 700; }
-        .session { display: flex; align-items: center; gap: 4px; justify-content: flex-end; }
-        .session-dot { width: 5px; height: 5px; border-radius: 50%; }
-        .session-name { font-size: 9px; font-weight: 700; }
-        
-        .controls-section { margin-bottom: 12px; }
-        .section-title { font-size: 10px; color: var(--text-secondary); letter-spacing: 2px; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; }
-        .pair-selector { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
-        .pair-selector::-webkit-scrollbar { display: none; }
-        .pair-button {
-            flex-shrink: 0; background: var(--bg-card-light); border: 1px solid var(--border-color);
-            border-radius: 20px; padding: 8px 14px; font-size: 12px; color: #aabbcc;
-            cursor: pointer; white-space: nowrap; font-weight: 500;
-        }
-        .pair-button.active { background: rgba(34, 204, 136, 0.15); border-color: rgba(34, 204, 136, 0.58); color: var(--accent-green); font-weight: 700; }
-        
-        .fixed-bottom-bar {
-            position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
-            background: rgba(6, 12, 20, 0.98); backdrop-filter: blur(16px);
-            border-top: 1px solid var(--border-color); padding: 8px 12px 14px;
-        }
-        .scan-button {
-            width: 100%; height: 54px; background: linear-gradient(135deg, var(--accent-blue), rgba(127, 179, 224, 0.1));
-            border: 1px solid var(--accent-blue); border-radius: 12px;
-            color: #fff; font-size: 14px; font-weight: 700; letter-spacing: 2px;
-            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
-        }
-        .scan-button:disabled { background: #333; border-color: #444; color: #666; cursor: not-allowed; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#07111f" />
+    <title>FX Scanner Pro URL</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="sticky-topbar">
+        <div class="brand-row">
+          <div class="brand-block">
+            <div class="brand-title-row">
+              <span class="live-dot"></span>
+              <div>
+                <p class="brand-title">FX SCANNER PRO URL</p>
+                <p class="brand-subtitle">OB · FVG · Structure · Alerts · Multi-scan</p>
+              </div>
+            </div>
+            <p class="brand-copy">
+              URL-friendly static scanner: работает без Node.js, хранит историю/алерты локально
+              и может запускаться в demo-режиме или через ваш AI proxy endpoint.
+            </p>
+          </div>
+          <div class="clock-panel panel-soft">
+            <div class="clock-time" id="clockTime">--:--:--</div>
+            <div class="clock-session"><span id="sessionDot" class="session-dot"></span><span id="sessionName">—</span></div>
+            <div class="clock-note">Europe/Moscow</div>
+          </div>
+        </div>
+        <nav class="tabs" id="tabs"></nav>
+      </header>
 
-        .result-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
-        .setup-card { border-width: 1.5px; border-radius: 14px; position: relative; overflow: hidden; }
-        .setup-card-buy { background: rgba(6, 18, 14, 0.97); border-color: rgba(34, 204, 136, 0.38); }
-        .setup-card-sell { background: rgba(20, 6, 8, 0.97); border-color: rgba(255, 68, 85, 0.38); }
-        .setup-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-        .setup-title { padding: 5px 12px; border-radius: 8px; font-size: 14px; font-weight: 700; letter-spacing: 2px; }
-        .setup-title-buy { background: rgba(34, 204, 136, 0.18); border: 1px solid rgba(34, 204, 136, 0.5); color: var(--accent-green); }
-        .setup-title-sell { background: rgba(255, 68, 85, 0.18); border: 1px solid rgba(255, 68, 85, 0.5); color: var(--accent-red); }
-        .setup-pills { display: flex; gap: 6px; font-size: 12px; font-weight: 700; }
-        .pill { border-radius: 20px; padding: 4px 10px; }
-        .pill-confidence { background: var(--bg-card); border: 1px solid; }
-        .pill-rr { background: rgba(240, 208, 96, 0.1); border: 1px solid rgba(240, 208, 96, 0.35); color: #f0d060; }
-        .setup-grid { display: grid; grid-templateColumns: 1fr 1fr; gap: 11px 14px; margin-bottom: 10px; }
-        .grid-item .label { font-size: 9px; color: #bbddee; letter-spacing: 1px; margin-bottom: 3px; font-weight: 600; }
-        .grid-item .value { font-size: 18px; font-weight: 700; }
-        .reasoning { font-size: 11px; line-height: 1.6; padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, 0.05); }
-        .no-trade-card { border: 2px solid rgba(240, 208, 96, 0.28); text-align: center; padding: 20px 16px; }
-        .no-trade-card .icon { font-size: 34px; margin-bottom: 8px; }
-        .no-trade-card .title { font-size: 15px; font-weight: 700; color: #f0d060; letter-spacing: 3px; margin-bottom: 10px; }
-        .no-trade-card .reason { font-size: 12px; line-height: 1.6; margin-bottom: 12px; }
-        
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
-    </style>
-</head>
-<body>
-
-    <header class="header">
-        <div class="header-top">
-            <div class            ="logo">
-                <div class="status-dot"></div>
+      <main class="page-stack">
+        <section id="view-scan" class="view active">
+          <div class="grid two-col">
+            <section class="panel card-stack">
+              <div class="section-head">
                 <div>
-                    <div class="logo-title courier">FX MATH SCANNER</div>
-                    <div class="logo-subtitle courier">ALGORITHMIC ENGINE</div>
+                  <p class="eyebrow">Scan setup</p>
+                  <h2>Пара, режим и источник сигнала</h2>
                 </div>
-            </div>
-            <div class="time-info">
-                <div id="clock" class="clock courier"></div>
-                <div id="session" class="session courier"></div>
-            </div>
-        </div>
-    </header>
+                <button id="loadDemo" class="ghost-button">Демо-данные</button>
+              </div>
 
-    <main class="container">
-        <div class="controls-section">
-            <div class="section-title courier">ВАЛЮТНАЯ ПАРА</div>
-            <div id="pair-selector" class="pair-selector"></div>
-        </div>
-        
-        <div id="output-container">
-            <div id="initial-screen" style="text-align: center; padding: 50px 20px; border: 1px dashed rgba(255, 255, 255, 0.07); border-radius: 14px; margin-top: 6px;">
-                <div style="font-size: 38px; opacity: 0.12; margin-bottom: 10px;">⚙️</div>
-                <div class="courier" style="font-size: 12px; color: #8899bb; letter-spacing: 2px; margin-bottom: 10px;">ГОТОВ К МАТЕМАТИЧЕСКОМУ АНАЛИЗУ</div>
-                <div style="font-size: 11px; color: #ccdde8; line-height: 2;">
-                    Никаких API-ключей. Никаких ошибок. <br> Только чистые данные и алгоритмы.
+              <div class="chip-row" id="pairChips"></div>
+
+              <div class="mode-grid" id="modeSwitch"></div>
+
+              <div class="field-grid compact">
+                <label>
+                  AI endpoint
+                  <input id="apiEndpoint" type="text" placeholder="https://your-proxy.example.com/v1/messages" />
+                </label>
+                <label>
+                  Model
+                  <input id="apiModel" type="text" placeholder="claude-sonnet-4-20250514" />
+                </label>
+                <label>
+                  API key
+                  <input id="apiKey" type="password" placeholder="Хранится только в браузере" />
+                </label>
+                <label>
+                  Режим ответа
+                  <select id="responseMode">
+                    <option value="demo">Demo / offline</option>
+                    <option value="proxy">Через proxy endpoint</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="callout info">
+                <strong>Как это работает по URL:</strong>
+                статический интерфейс можно бесплатно выложить на Netlify / GitHub Pages.
+                Для реального AI-запроса лучше подключать <strong>свой proxy endpoint</strong>, а не светить ключ в публичном браузере.
+              </div>
+
+              <details class="details-panel">
+                <summary>Показать prompt / интеграцию</summary>
+                <div class="details-grid">
+                  <label>
+                    Deep prompt
+                    <textarea id="deepPromptPreview" readonly></textarea>
+                  </label>
+                  <label>
+                    Quick prompt
+                    <textarea id="quickPromptPreview" readonly></textarea>
+                  </label>
                 </div>
-            </div>
-        </div>
-    </main>
+                <div class="button-row">
+                  <button id="copyDeepPrompt" class="ghost-button">Копировать deep</button>
+                  <button id="copyQuickPrompt" class="ghost-button">Копировать quick</button>
+                </div>
+              </details>
+            </section>
 
-    <div class="fixed-bottom-bar">
-        <button id="scan-button" class="scan-button courier">
-            <span>ЗАПУСТИТЬ АЛГОРИТМ</span>
-        </button>
+            <section class="panel card-stack">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Action</p>
+                  <h2>Управление сканированием</h2>
+                </div>
+              </div>
+
+              <div class="status-hero" id="scanStatusHero">
+                <div>
+                  <div class="status-line">
+                    <span class="status-pill neutral" id="mainStatusPill">READY</span>
+                    <span class="muted-text" id="scanMeta">Выберите режим и запустите сканирование</span>
+                  </div>
+                  <h3 id="scanHeadline">Статический URL-ready интерфейс</h3>
+                  <p id="scanDescription" class="muted-text">
+                    В demo-режиме приложение показывает улучшенный UX и логику рендеринга.
+                    В proxy-режиме оно готово принять ответ AI в JSON и отрисовать его без сборки и без Node.js.
+                  </p>
+                </div>
+                <div class="hero-metrics">
+                  <article>
+                    <span>Пара</span>
+                    <strong id="metricPair">EUR/USD</strong>
+                  </article>
+                  <article>
+                    <span>Режим</span>
+                    <strong id="metricMode">DEEP</strong>
+                  </article>
+                  <article>
+                    <span>Источник</span>
+                    <strong id="metricSource">DEMO</strong>
+                  </article>
+                </div>
+              </div>
+
+              <div id="loadingBlock" class="loading-block hidden">
+                <div class="loading-text" id="loadingText">Ищу реальную цену...</div>
+                <div class="skeleton-grid">
+                  <div class="skeleton tall"></div>
+                  <div class="skeleton"></div>
+                  <div class="skeleton"></div>
+                  <div class="skeleton short"></div>
+                </div>
+              </div>
+
+              <div class="button-row sticky-actions">
+                <button id="runScan" class="primary-button big-button">🔬 Глубокий скан</button>
+                <button id="runMultiScan" class="secondary-button big-button">⚡ Все пары</button>
+              </div>
+
+              <div id="errorBox" class="callout danger hidden"></div>
+            </section>
+          </div>
+
+          <div class="grid results-layout">
+            <section class="panel card-stack">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Analysis</p>
+                  <h2>Результат по выбранной паре</h2>
+                </div>
+                <button id="copyJson" class="ghost-button">Копировать JSON</button>
+              </div>
+              <div id="analysisContent" class="analysis-content empty-state">
+                <div class="empty-icon">◈</div>
+                <h3>Нет результата</h3>
+                <p>Нажмите «Глубокий скан» или загрузите demo-данные.</p>
+              </div>
+            </section>
+
+            <aside class="side-column">
+              <section class="panel card-stack">
+                <div class="section-head">
+                  <div>
+                    <p class="eyebrow">Export</p>
+                    <h2>JSON и текст</h2>
+                  </div>
+                </div>
+                <pre id="jsonOutput" class="json-output">{}</pre>
+                <textarea id="textSummary" class="prompt-output" readonly></textarea>
+              </section>
+
+              <section class="panel card-stack">
+                <div class="section-head">
+                  <div>
+                    <p class="eyebrow">System notes</p>
+                    <h2>Что улучшено</h2>
+                  </div>
+                </div>
+                <ul class="feature-list">
+                  <li>Интерфейс разбит на вкладки: Scan / Multi / Alerts / History.</li>
+                  <li>Добавлены localStorage-история, алерты и готовность к proxy API.</li>
+                  <li>Есть два режима ответа: demo и live proxy, чтобы приложение работало и без backend.</li>
+                  <li>Сохраняется URL-friendly формат: чистые HTML/CSS/JS без сборки.</li>
+                </ul>
+              </section>
+            </aside>
+          </div>
+        </section>
+
+        <section id="view-multi" class="view">
+          <section class="panel card-stack">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Multi-pair</p>
+                <h2>Быстрый скан всех пар</h2>
+              </div>
+              <div class="progress-cluster">
+                <span class="muted-text" id="multiProgressLabel">0%</span>
+                <div class="progress-bar"><span id="multiProgressFill"></span></div>
+              </div>
+            </div>
+            <div id="multiGrid" class="multi-grid empty-state small-empty">
+              <div class="empty-icon">⚡</div>
+              <h3>Мульти-скан ещё не запускался</h3>
+              <p>Нажмите «Все пары», чтобы получить короткий обзор и затем перейти в deep-анализ.</p>
+            </div>
+          </section>
+        </section>
+
+        <section id="view-alerts" class="view">
+          <section class="panel card-stack">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Alerts</p>
+                <h2>Зоны входа и уведомления</h2>
+              </div>
+              <button id="requestNotifications" class="ghost-button">Разрешить push</button>
+            </div>
+            <div id="alertsContent" class="empty-state small-empty">
+              <div class="empty-icon">🔔</div>
+              <h3>Алертов пока нет</h3>
+              <p>Добавьте алерт прямо из карточки buy/sell limit.</p>
+            </div>
+          </section>
+        </section>
+
+        <section id="view-history" class="view">
+          <section class="panel card-stack">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">History</p>
+                <h2>Последние сканы</h2>
+              </div>
+              <button id="clearHistory" class="ghost-button danger-button">Очистить</button>
+            </div>
+            <div id="historyContent" class="empty-state small-empty">
+              <div class="empty-icon">📋</div>
+              <h3>История пуста</h3>
+              <p>После первого скана здесь появятся результаты.</p>
+            </div>
+          </section>
+        </section>
+      </main>
     </div>
 
-<script>
-// ===================================================================================
-// ─── МАТЕМАТИЧЕСКИЙ ДВИЖОК (ALGORITHMIC ENGINE) ───────────────────────────────────
-// ===================================================================================
-
-class MathEngine {
-    constructor(pair, price) {
-        this.pair = pair;
-        this.price = price;
-        this.isJPY = pair.includes("JPY");
-        this.fmt = v => v.toFixed(this.isJPY ? 3 : 5);
-    }
-
-    // Симуляция истории цен для расчета индикаторов (в реальном приложении здесь массив OHLC)
-    generateHistory() {
-        const history = [];
-        let lastPrice = this.price;
-        for (let i = 0; i < 50; i++) {
-            const change = lastPrice * (Math.random() * 0.002 - 0.001);
-            lastPrice += change;
-            history.push(lastPrice);
-        }
-        return history;
-    }
-
-    // Расчет EMA (Exponential Moving Average)
-    calculateEMA(data, period) {
-        const k = 2 / (period + 1);
-        let ema = data[0];
-        for (let i = 1; i < data.length; i++) {
-            ema = data[i] * k + ema * (1 - k);
-        }
-        return ema;
-    }
-
-    // Расчет RSI (Relative Strength Index)
-    calculateRSI(data, period = 14) {
-        let gains = 0, losses = 0;
-        for (let i = data.length - period; i < data.length; i++) {
-            const diff = data[i] - data[i - 1];
-            if (diff >= 0) gains += diff;
-            else losses -= diff;
-        }
-        const rs = (gains / period) / (losses / period);
-        return 100 - (100 / (1 + rs));
-    }
-
-    // Расчет ATR (Average True Range) - упрощенно
-    calculateATR(data) {
-        let sum = 0;
-        for (let i = 1; i < data.length; i++) {
-            sum += Math.abs(data[i] - data[i-1]);
-        }
-        return sum / data.length;
-    }
-
-    // Поиск уровней S/R
-    getLevels(data) {
-        const max = Math.max(...data);
-        const min = Math.min(...data);
-        return { resistance: max, support: min };
-    }
-
-    // ГЛАВНЫЙ АЛГОРИТМ ПРИНЯТИЯ РЕШЕНИЯ
-    analyze() {
-        const history = this.generateHistory();
-        const emaShort = this.calculateEMA(history, 10);
-        const emaLong = this.calculateEMA(history, 30);
-        const rsi = this.calculateRSI(history);
-        const atr = this.calculateATR(history);
-        const levels = this.getLevels(history);
-
-        let signal = "no_trade";
-        let reasoning = "";
-        let confidence = 50;
-
-        // Логика BUY
-        if (this.price <= levels.support * 1.001 && rsi < 35 && emaShort > emaLong) {
-            signal = "buy";
-            reasoning = `Цена в зоне поддержки. RSI (${rsi.toFixed(1)}) указывает на перепроданность. Тренд подтвержден EMA.`;
-            confidence = 85;
-        } 
-        // Логика SELL
-        else if (this.price >= levels.resistance * 0.999 && rsi > 65 && emaShort < emaLong) {
-            signal = "sell";
-            reasoning = `Цена в зоне сопротивления. RSI (${rsi.toFixed(1)}) указывает на перекупленность. Тренд медвежий.`;
-            confidence = 85;
-        }
-        // Логика NO_TRADE
-        else {
-            signal = "no_trade";
-            reasoning = "Математические условия (RSI + EMA + Уровни) не сформировали четкий сетап. Ждем подтверждения.";
-            confidence = 0;
-        }
-
-        // Расчет параметров сделки
-        const setup = {
-            buy: null,
-            sell: null,
-            no_trade: null
-        };
-
-        if (signal === "buy") {
-            const entry = this.price;
-            const sl = entry - (atr * 2);
-            const risk = entry - sl;
-            setup.buy = {
-                entry_zone: `${this.fmt(entry * 0.999)}-${this.fmt(entry)}`,
-                entry_num: entry,
-                stop_loss: this.fmt(sl),
-                sl_num: sl,
-                tp1: this.fmt(entry + risk * 2.2),
-                tp1_num: entry + risk * 2.2,
-                tp2: this.fmt(entry + risk * 3.5),
-                tp2_num: entry + risk * 3.5,
-                confidence: confidence,
-                reasoning: reasoning
-            };
-        } else if (signal === "sell") {
-            const entry = this.price;
-            const sl = entry + (atr * 2);
-            const risk = sl - entry;
-            setup.sell = {
-                entry_zone: `${this.fmt(entry)}-${this.fmt(entry * 1.001)}`,
-                entry_num: entry,
-                stop_loss: this.fmt(sl),
-                sl_num: sl,
-                tp1: this.fmt(entry - risk * 2.2),
-                tp1_num: entry - risk * 2.2,
-                tp2: this.fmt(entry - risk * 3.5),
-                tp2_num: entry - risk * 3.5,
-                confidence: confidence,
-                reasoning: reasoning
-            };
-        } else {
-            setup.no_trade = {
-                reason: reasoning,
-                wait_for: "Ожидание совпадения RSI и трендовых EMA у уровней."
-            };
-        }
-
-        return setup;
-    }
-}
-
-// ===================================================================================
-// ─── UI И ОБРАБОТКА СОБЫТИЙ ───────────────────────────────────────────────────────
-// ===================================================================================
-
-function createSetupCard(data, isBuy) {
-    if (!data) return '';
-    const rr = (Math.abs(data.tp1_num - data.entry_num) / Math.abs(data.entry_num - data.sl_num)).toFixed(2);
-    let confColor = data.confidence >= 75 ? 'var(--accent-green)' : (data.confidence >= 55 ? 'var(--accent-yellow)' : 'var(--accent-red)');
-    return `
-    <div class="result-card setup-card ${isBuy ? 'setup-card-buy' : 'setup-card-sell'}">
-        <div class="setup-header">
-            <div class="setup-title courier ${isBuy ? 'setup-title-buy' : 'setup-title-sell'}">${isBuy ? '▲ BUY LIMIT' : '▼ SELL LIMIT'}</div>
-            <div class="setup-pills courier"><div class="pill pill-confidence" style="border-color:${confColor}; color:${confColor};">${data.confidence}%</div><div class="pill pill-rr">R:R ${rr}</div></div>
-        </div>
-        <div class="setup-grid courier">
-            <div class="grid-item"><div class="label">ВХОД (ЗОНА)</div><div class="value" style="color: var(--accent-yellow);">${data.entry_zone}</div></div>
-            <div class="grid-item"><div class="label">СТОП ЛОСС</div><div class="value" style="color: var(--accent-red);">${data.stop_loss}</div></div>
-            <div class="grid-item"><div class="label">ТЕЙК ПРОФИТ 1</div><div class="value" style="color: var(--accent-green);">${data.tp1}</div></div>
-            ${data.tp2 ? `<div class="grid-item"><div class="label">ТЕЙК ПРОФИТ 2</div><div class="value" style="color: #55ffcc;">${data.tp2}</div></div>` : ''}
-        </div>
-        <div class="reasoning">${data.reasoning}</div>
-    </div>`;
-}
-
-function createNoTradeCard(data) {
-    if (!data) return '';
-    return `<div class="result-card no-trade-card courier"><div class="icon">🚫</div><div class="title">NO TRADE</div><div class="reason">${data.reason}</div>${data.wait_for ? `<div style="padding: 8px 12px; background: rgba(240, 208, 96, 0.07); border: 1px solid rgba(240, 208, 96, 0.22); border-radius: 8px; font-size: 11px; color: #c8b060; text-align: left;"><span style="color: #f0d060;">⏳ ЖДЁМ: </span>${data.wait_for}</div>` : ''}</div>`;
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    const PAIRS = ["EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CAD", "NZD/USD"];
-    let currentPair = "EUR/USD";
-    let isLoading = false;
-
-    const clockEl = document.getElementById('clock'), sessionEl = document.getElementById('session');
-    const pairSelectorEl = document.getElementById('pair-selector'), scanButtonEl = document.getElementById('scan-button');
-    const outputContainerEl = document.getElementById('output-container'), initialScreenEl = document.getElementById('initial-screen');
-
-    function init() {
-        pairSelectorEl.innerHTML = PAIRS.map(p => `<button class="pair-button courier ${p === currentPair ? 'active' : ''}" data-pair="${p}">${p}</button>`).join('');
-        setInterval(updateTime, 1000); updateTime();
-        pairSelectorEl.addEventListener('click', e => {
-            if (e.target.classList.contains('pair-button')) {
-                currentPair = e.target.dataset.pair;
-                document.querySelectorAll('.pair-button').forEach(btn => btn.classList.remove('active'));
-                e.target.classList.add('active');
-                if (initialScreenEl) initialScreenEl.style.display = 'block';
-                outputContainerEl.innerHTML = '';
-            }
-        });
-        scanButtonEl.addEventListener('click', runScan);
-    }
-
-    async function runScan() {
-        if (isLoading) return;
-        isLoading = true;
-        scanButtonEl.disabled = true;
-        scanButtonEl.innerHTML = `<span class="loader-text courier">РАСЧЕТ АЛГОРИТМА...</span>`;
-        if (initialScreenEl) initialScreenEl.style.display = 'none';
-        outputContainerEl.innerHTML = `<div class="loader-container"><div class="loader-text courier" style="color: var(--accent-blue);">ВЫЧИСЛЕНИЕ ИНДИКАТОРОВ...</div></div>`;
-
-        try {
-            // Симуляция получения реальной цены (в продакшене здесь будет fetch к бесплатному API)
-            const pseudoPrice = 1.0850 + (Math.random() * 0.01);
-            
-            const engine = new MathEngine(currentPair, pseudoPrice);
-            const result = engine.analyze();
-            
-            renderResults(result);
-        } catch (error) {
-            outputContainerEl.innerHTML = `<div class="error-card">⚠ Ошибка расчета: ${error.message}</div>`;
-        } finally {
-            isLoading = false;
-            scanButtonEl.disabled = false;
-            scanButtonEl.innerHTML = `<span>ЗАПУСТИТЬ АЛГОРИТМ</span>`;
-        }
-    }
-
-    function renderResults(result) {
-        let html = '';
-        if (result.no_trade && !result.buy && !result.sell) {
-            html += createNoTradeCard(result.no_trade);
-        } else {
-            const setups = [{ data: result.buy, isBuy: true }, { data: result.sell, isBuy: false }]
-                .filter(s => s.data).sort((a, b) => b.data.confidence - a.data.confidence);
-            if (setups.length > 0) setups.forEach(s => html += createSetupCard(s.data, s.isBuy)); 
-            else html += createNoTradeCard({reason: "Математических условий для входа не обнаружено.", wait_for: "Ожидание волатильности."});
-        }
-        outputContainerEl.innerHTML = html;
-    }
-
-    function updateTime() {
-        const now = new Date(), moscowTime = now.toLocaleTimeString("ru-RU", { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: "Europe/Moscow" });
-        clockEl.textContent = moscowTime;
-        const h = parseInt(now.toLocaleTimeString("ru-RU", { hour: "2-digit", timeZone: "Europe/Moscow" }));
-        let sessionName, sessionColor;
-        if (h >= 10 && h < 19) { sessionName = "ЛОНДОН"; sessionColor = "var(--accent-green)"; } 
-        else if (h >= 16 && h < 24) { sessionName = "НЬЮ-ЙОРК"; sessionColor = "var(--accent-yellow)"; } 
-        else if (h >= 3 && h < 12) { sessionName = "АЗИЯ"; sessionColor = "var(--accent-blue)"; } 
-        else { sessionName = "ОФФМАРКЕТ"; sessionColor = "#8899bb"; }
-        sessionEl.innerHTML = `<div class="session-dot" style="background-color: ${sessionColor}; box-shadow: 0 0 5px ${sessionColor};"></div><div class="session-name" style="color: ${sessionColor};">${sessionName}</div>`;
-    }
-
-    init();
-});
-</script>
-
-</body>
+    <script src="app.js"></script>
+  </body>
 </html>
